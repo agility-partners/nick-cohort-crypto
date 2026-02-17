@@ -112,14 +112,3 @@ Detailed docs:
 	- `cryptologos.cc`
 - TypeScript path alias `@/*` is configured in `tsconfig.json`.
 
-## Current Limitations
-
-- `CryptoCard` links to `/crypto/[id]`, but no route is currently implemented for that path.
-- Data is static and local; no server or client data fetching is implemented.
-- No tests are currently present.
-
-## Suggested Next Milestones
-
-- Introduce a typed data access layer for API integration.
-- Add unit tests for sorting and formatting logic.
-- Add component or end-to-end tests for critical user flows.
