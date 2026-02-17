@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CoinSight
 
-## Getting Started
+CoinSight is a Next.js App Router application that renders a crypto watchlist UI from local mock data. The app supports client-side sorting by market cap, price, 24h change, and name, and displays each asset in a responsive card grid.
 
-First, run the development server:
+## Purpose
+
+This project is currently an MVP focused on:
+
+- clean React component composition
+- typed data modeling with TypeScript
+- deterministic local rendering without external API dependency
+- polished visual styling using Tailwind CSS v4
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript 5
+- Tailwind CSS v4 (`@tailwindcss/postcss`)
+- ESLint 9 (`eslint-config-next`)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+
+### Install
+
+```bash
+npm install
+```
+
+### Run in development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Lint
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+```
 
-## Learn More
+### Production build
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+npm run start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```text
+app/
+	globals.css          Global theme tokens, background visuals, base styles
+	layout.tsx           Root layout + metadata + decorative background wrappers
+	page.tsx             Home page state, sorting logic, top-level composition
+	crypto/
+		[id]/
+			page.tsx         Dynamic crypto detail page
+			not-found.tsx    Invalid crypto id fallback UI
 
-## Deploy on Vercel
+src/
+	components/
+		SortControls.tsx   Sort key selector + direction toggle
+		Watchlist.tsx      Watchlist boundary component
+		CryptoGrid.tsx     Responsive grid + empty-state rendering
+		CryptoCard.tsx     Individual coin card + logo fallback handling
+		PriceDisplay.tsx   Price and 24h change formatting/presentation
+	data/
+		mockCryptos.ts     Crypto type + local mock dataset + helper lookup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+next.config.ts         Next.js config (remote image host allowlist)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Implemented Features
+
+- Static crypto dataset typed via `Crypto` interface
+- Stable client-side sorting with `useMemo`
+- Configurable sort key and direction controls
+- Card-based watchlist UI with responsive breakpoints
+- Dynamic coin detail route (`/crypto/[id]`)
+- Custom not-found state for invalid coin IDs
+- Price formatting via `Intl.NumberFormat`
+- Positive/negative change indicator styling
+- Remote logo rendering using Next Image with fallback initials
+- Animated, theme-consistent background visuals
+
+## App Logic Summary
+
+1. `app/page.tsx` initializes `sortKey` and `sortDirection` state.
+2. `sortCryptos()` sorts `mockCryptos` by selected key and direction.
+3. `useMemo` recomputes sorted data only when sort state changes.
+4. Sorted data is passed to `Watchlist`.
+5. `Watchlist` renders `CryptoGrid`, which maps items into `CryptoCard`.
+6. Each `CryptoCard` renders metadata and delegates price/chg UI to `PriceDisplay`.
+
+Detailed docs:
+
+- `docs/architecture.md`
+- `docs/logic-flow.md`
+
+## Configuration Notes
+
+- `next.config.ts` allows remote images from:
+	- `assets.coingecko.com`
+	- `cryptologos.cc`
+- TypeScript path alias `@/*` is configured in `tsconfig.json`.
+
+## Current Limitations
+
+- `CryptoCard` links to `/crypto/[id]`, but no route is currently implemented for that path.
+- Data is static and local; no server or client data fetching is implemented.
+- No tests are currently present.
+
+## Suggested Next Milestones
+
+- Introduce a typed data access layer for API integration.
+- Add unit tests for sorting and formatting logic.
+- Add component or end-to-end tests for critical user flows.
