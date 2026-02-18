@@ -7,7 +7,9 @@ export type { SortKey, SortDirection };
 interface SortControlsProps {
   sortKey: SortKey;
   sortDirection: SortDirection;
+  searchQuery: string;
   onSortKeyChange: (key: SortKey) => void;
+  onSearchQueryChange: (query: string) => void;
   onDirectionToggle: () => void;
 }
 
@@ -22,11 +24,25 @@ const sortOptions: { value: SortKey; label: string }[] = [
 export default function SortControls({
   sortKey,
   sortDirection,
+  searchQuery,
   onSortKeyChange,
+  onSearchQueryChange,
   onDirectionToggle,
 }: SortControlsProps) {
   return (
     <div className="flex items-center gap-2">
+      <label htmlFor="crypto-search" className="sr-only">
+        Search coins
+      </label>
+      <input
+        id="crypto-search"
+        type="search"
+        value={searchQuery}
+        onChange={(e) => onSearchQueryChange(e.target.value)}
+        placeholder="Search coins"
+        className="w-44 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-1.5 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur-xl outline-none transition-colors placeholder:text-[var(--text-muted)] hover:border-[var(--card-hover-border)] focus:border-green-500/40 focus:ring-1 focus:ring-green-500/20"
+      />
+
       <label htmlFor="sort-select" className="text-sm text-[var(--text-secondary)]">
         Sort by
       </label>

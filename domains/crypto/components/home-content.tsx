@@ -44,6 +44,23 @@ function sortCryptos(cryptos: Crypto[], key: SortKey, dir: SortDirection): Crypt
   return dir === "desc" ? sorted.reverse() : sorted;
 }
 
+function filterCryptos(cryptos: Crypto[], query: string): Crypto[] {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return cryptos;
+  }
+
+  return cryptos.filter(({ name, symbol }) => {
+    const normalizedName = name.toLowerCase();
+    const normalizedSymbol = symbol.toLowerCase();
+
+    return (
+      normalizedName.includes(normalizedQuery) || normalizedSymbol.includes(normalizedQuery)
+    );
+  });
+}
+
 /* ── component ── */
 export default function HomeContent() {
   const searchParams = useSearchParams();
@@ -51,6 +68,7 @@ export default function HomeContent() {
 
   const [sortKey, setSortKey] = useState<SortKey>(() => getDefaultSort(view).key);
   const [sortDirection, setSortDirection] = useState<SortDirection>(() => getDefaultSort(view).dir);
+  const [searchQuery, setSearchQuery] = useState("");
 
   /* sync sort state when the navbar view changes */
   useEffect(() => {
@@ -59,10 +77,10 @@ export default function HomeContent() {
     setSortDirection(defaults.dir);
   }, [view]);
 
-  const sorted = useMemo(
-    () => sortCryptos(mockCryptos, sortKey, sortDirection),
-    [sortKey, sortDirection],
-  );
+  const filteredAndSorted = useMemo(() => {
+    const filtered = filterCryptos(mockCryptos, searchQuery);
+    return sortCryptos(filtered, sortKey, sortDirection);
+  }, [searchQuery, sortKey, sortDirection]);
 
   const { title } = VIEW_META[view];
 
@@ -72,19 +90,21 @@ export default function HomeContent() {
         <div className="flex items-center gap-2.5">
           <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">{title}</h2>
           <span className="ml-1 rounded-full bg-[var(--badge-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
-            {mockCryptos.length}
+            {filteredAndSorted.length}
           </span>
         </div>
 
         <SortControls
           sortKey={sortKey}
           sortDirection={sortDirection}
+          searchQuery={searchQuery}
           onSortKeyChange={setSortKey}
+          onSearchQueryChange={setSearchQuery}
           onDirectionToggle={() => setSortDirection((d) => (d === "asc" ? "desc" : "asc"))}
         />
       </div>
 
-      <Watchlist cryptos={sorted} />
+      <Watchlist cryptos={filteredAndSorted} />
     </>
   );
 }
