@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { mockCryptos } from "@/src/data/mockCryptos";
+import CoinSightLogo from "./CoinSightLogo";
 
 const compactFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -19,9 +20,7 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 shadow-lg shadow-green-500/25 transition-shadow group-hover:shadow-green-500/40">
-            <span className="text-sm font-bold tracking-tight text-white">CS</span>
-          </div>
+          <CoinSightLogo size={36} className="drop-shadow-lg transition-transform group-hover:scale-105" />
           <span className="bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-xl font-extrabold tracking-tight text-transparent sm:text-2xl">
             CoinSight
           </span>
