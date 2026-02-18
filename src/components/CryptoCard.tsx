@@ -19,7 +19,7 @@ export default function CryptoCard({ crypto }: CryptoCardProps) {
   return (
     <Link
       href={`/crypto/${crypto.id}`}
-      className="group relative block overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 shadow-lg shadow-[var(--shadow-color)] backdrop-blur-xl transition-all duration-300 hover:border-[var(--card-hover-border)] hover:bg-[var(--card-bg)] hover:shadow-green-500/10"
+      className="group relative block overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 shadow-lg shadow-[var(--shadow-color)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[var(--card-hover-border)] hover:bg-[var(--card-bg)] hover:shadow-xl hover:shadow-green-500/10"
       aria-label={`View details for ${crypto.name}`}
     >
       {/* subtle top-edge gradient accent */}
