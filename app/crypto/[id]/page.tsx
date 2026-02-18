@@ -58,7 +58,7 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
         </Link>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-lg shadow-black/20 backdrop-blur-xl sm:p-8">
+      <section className="overflow-hidden rounded-2xl border p-6 shadow-lg backdrop-blur-xl sm:p-8" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)', boxShadow: '0 10px 15px -3px var(--shadow-color)' }}>
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <div>
             <header className="mb-8 flex items-start justify-between gap-4">
@@ -87,21 +87,21 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
             </header>
 
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
                 <dt className="text-xs uppercase tracking-wider text-gray-500">Market Cap</dt>
                 <dd className="mt-2 text-xl font-semibold text-foreground">
                   {compactCurrencyFormatter.format(crypto.marketCap)}
                 </dd>
               </div>
 
-              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
                 <dt className="text-xs uppercase tracking-wider text-gray-500">24h Volume</dt>
                 <dd className="mt-2 text-xl font-semibold text-foreground">
                   {compactCurrencyFormatter.format(crypto.volume24h)}
                 </dd>
               </div>
 
-              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
                 <dt className="text-xs uppercase tracking-wider text-gray-500">24h Change</dt>
                 <dd
                   className={`mt-2 text-xl font-semibold ${crypto.change24h >= 0 ? "text-green-400" : "text-rose-400"}`}

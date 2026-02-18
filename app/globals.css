@@ -6,8 +6,8 @@
 :root {
   --background: #f5f2eb;
   --foreground: #1a1f1c;
-  --card-bg: rgba(255, 255, 255, 0.28);
-  --card-border: rgba(255, 255, 255, 0.55);
+  --card-bg: rgba(255, 255, 255, 0.55);
+  --card-border: rgba(0, 0, 0, 0.1);
   --card-hover-border: rgba(34, 197, 94, 0.5);
   --header-bg: rgba(245, 242, 235, 0.45);
   --accent: #22c55e;
