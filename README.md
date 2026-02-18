@@ -1,113 +1,65 @@
 # CoinSight
 
-CoinSight is a Next.js App Router application that renders a crypto watchlist UI from local mock data. The app supports client-side sorting by market cap, price, 24h change, and name, and displays each asset in a responsive card grid.
+CoinSight is a client-driven crypto dashboard built with Next.js App Router and React 19. It intentionally runs on static in-repo mock data only (no backend, no API routes, no persistence) so UI behavior stays deterministic during development.
 
-## Purpose
+## What this project is
 
-This project is currently an MVP focused on:
+- A frontend-first crypto dashboard MVP
+- Strongly typed TypeScript domain model
+- App Router routes with domain-based feature organization
+- Theme-aware UI using Tailwind v4 + `next-themes`
 
-- clean React component composition
-- typed data modeling with TypeScript
-- deterministic local rendering without external API dependency
-- polished visual styling using Tailwind CSS v4
+## Tech stack
 
-## Tech Stack
+- `next` 16.1.6
+- `react` / `react-dom` 19.2.3
+- `typescript` 5
+- `tailwindcss` v4
+- `next-themes` ^0.4
+- `eslint` 9 (`eslint-config-next`)
+- `prettier` 3.8.1
 
-- Next.js 16 (App Router)
-- React 19
-- TypeScript 5
-- Tailwind CSS v4 (`@tailwindcss/postcss`)
-- ESLint 9 (`eslint-config-next`)
+## Run locally
 
-## Quick Start
-
-### Prerequisites
-
-- Node.js 20+
-- npm 10+
-
-### Install
+Prerequisites: Node.js 20+ and npm 10+
 
 ```bash
 npm install
-```
-
-### Run in development
-
-```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open http://localhost:3000
 
-### Lint
+Useful commands:
 
 ```bash
 npm run lint
-```
-
-### Production build
-
-```bash
 npm run build
 npm run start
 ```
 
-## Project Structure
+## Project shape
 
-```text
-app/
-	globals.css          Global theme tokens, background visuals, base styles
-	layout.tsx           Root layout + metadata + decorative background wrappers
-	page.tsx             Home page state, sorting logic, top-level composition
-	crypto/
-		[id]/
-			page.tsx         Dynamic crypto detail page
-			not-found.tsx    Invalid crypto id fallback UI
+- `app/`: route files only (`page.tsx`, `layout.tsx`, route-level `not-found.tsx`)
+- `domains/crypto/`: feature logic, UI components, mock data, and types
+- `shared/components/`: reusable cross-feature UI (header, nav, theme primitives)
+- `docs/`: source-of-truth architecture and implementation notes
 
-src/
-	components/
-		SortControls.tsx   Sort key selector + direction toggle
-		Watchlist.tsx      Watchlist boundary component
-		CryptoGrid.tsx     Responsive grid + empty-state rendering
-		CryptoCard.tsx     Individual coin card + logo fallback handling
-		PriceDisplay.tsx   Price and 24h change formatting/presentation
-	data/
-		mockCryptos.ts     Crypto type + local mock dataset + helper lookup
+## Key constraints
 
-next.config.ts         Next.js config (remote image host allowlist)
-```
+- No external charting, state management, or data-fetching libraries
+- No server-side data source (all data is local mock)
+- Keep route files thin; place logic/state in `domains/` or `shared/`
 
-## Implemented Features
+## Documentation map
 
-- Static crypto dataset typed via `Crypto` interface
-- Stable client-side sorting with `useMemo`
-- Configurable sort key and direction controls
-- Card-based watchlist UI with responsive breakpoints
-- Dynamic coin detail route (`/crypto/[id]`)
-- Custom not-found state for invalid coin IDs
-- Price formatting via `Intl.NumberFormat`
-- Positive/negative change indicator styling
-- Remote logo rendering using Next Image with fallback initials
-- Animated, theme-consistent background visuals
-
-## App Logic Summary
-
-1. `app/page.tsx` initializes `sortKey` and `sortDirection` state.
-2. `sortCryptos()` sorts `mockCryptos` by selected key and direction.
-3. `useMemo` recomputes sorted data only when sort state changes.
-4. Sorted data is passed to `Watchlist`.
-5. `Watchlist` renders `CryptoGrid`, which maps items into `CryptoCard`.
-6. Each `CryptoCard` renders metadata and delegates price/chg UI to `PriceDisplay`.
-
-Detailed docs:
-
-- `docs/architecture.md`
-- `docs/logic-flow.md`
-
-## Configuration Notes
-
-- `next.config.ts` allows remote images from:
-  - `assets.coingecko.com`
-  - `cryptologos.cc`
-- TypeScript path alias `@/*` is configured in `tsconfig.json`.
+- `docs/overview.md`
+- `docs/folder-structure.md`
+- `docs/routing.md`
+- `docs/component-hierarchy.md`
+- `docs/state-management.md`
+- `docs/chart-system.md`
+- `docs/data-model.md`
+- `docs/theming.md`
+- `docs/decisions.md`
+- `docs/roadmap.md`
