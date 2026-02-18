@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import ChartSection from "@/domains/crypto/components/ChartSection";
-import PriceDisplay from "@/domains/crypto/components/PriceDisplay";
+import ChartSection from "@/domains/crypto/components/chart-section";
+import PriceDisplay from "@/domains/crypto/components/price-display";
 import { getCryptoById, mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
 
 interface CryptoDetailPageProps {
@@ -72,7 +72,9 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
                   priority
                 />
                 <div className="min-w-0">
-                  <h1 className="truncate text-3xl font-bold text-foreground sm:text-4xl">{crypto.name}</h1>
+                  <h1 className="truncate text-3xl font-bold text-foreground sm:text-4xl">
+                    {crypto.name}
+                  </h1>
                   <p className="mt-1 text-sm font-medium uppercase tracking-wider text-gray-400">
                     {crypto.symbol}
                   </p>

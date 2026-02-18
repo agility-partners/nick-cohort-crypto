@@ -3,9 +3,9 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import Header from "@/shared/components/Header";
-import Navbar from "@/shared/components/Navbar";
-import ThemeProvider from "@/shared/components/ThemeProvider";
+import Header from "@/shared/components/header";
+import Navbar from "@/shared/components/navbar";
+import ThemeProvider from "@/shared/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           {/* animated bouncing green blobs */}
           <div className="bg-blobs" aria-hidden="true">

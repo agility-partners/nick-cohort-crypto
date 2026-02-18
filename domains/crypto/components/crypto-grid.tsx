@@ -1,6 +1,6 @@
-import type { Crypto } from "@/domains/crypto/mock/cryptos.mock";
+import type { Crypto } from "@/domains/crypto/types/crypto.types";
 
-import CryptoCard from "./CryptoCard";
+import CryptoCard from "./crypto-card";
 
 interface CryptoGridProps {
   cryptos: Crypto[];
@@ -14,8 +14,12 @@ export default function CryptoGrid({ cryptos }: CryptoGridProps) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-xl px-6 py-16 text-center">
         <span className="mb-3 text-4xl">📭</span>
-        <p className="text-base font-medium text-[var(--text-primary)]">No cryptocurrencies found.</p>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">Add some coins to your watchlist to get started.</p>
+        <p className="text-base font-medium text-[var(--text-primary)]">
+          No cryptocurrencies found.
+        </p>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">
+          Add some coins to your watchlist to get started.
+        </p>
       </div>
     );
   }

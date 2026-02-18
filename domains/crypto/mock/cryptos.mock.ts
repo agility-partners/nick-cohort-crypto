@@ -1,13 +1,6 @@
-export interface Crypto {
-  id: string;
-  name: string;
-  symbol: string;
-  price: number;
-  change24h: number;
-  marketCap: number;
-  volume24h: number;
-  image: string;
-}
+import type { Crypto } from "@/domains/crypto/types/crypto.types";
+
+export type { Crypto };
 
 export const mockCryptos: Crypto[] = [
   {
@@ -88,7 +81,8 @@ export const mockCryptos: Crypto[] = [
     change24h: -1.44,
     marketCap: 14600000000,
     volume24h: 540000000,
-    image: "https://coin-images.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
+    image:
+      "https://coin-images.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
   },
   {
     id: "polkadot",
@@ -188,7 +182,8 @@ export const mockCryptos: Crypto[] = [
     change24h: 4.38,
     marketCap: 4600000000,
     volume24h: 420000000,
-    image: "https://coin-images.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg",
+    image:
+      "https://coin-images.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg",
   },
   {
     id: "optimism",

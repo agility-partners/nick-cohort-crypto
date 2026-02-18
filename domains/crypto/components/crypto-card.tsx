@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 
-import type { Crypto } from "@/domains/crypto/mock/cryptos.mock";
+import type { Crypto } from "@/domains/crypto/types/crypto.types";
 
-import CryptoLogo from "./CryptoLogo";
-import PriceDisplay from "./PriceDisplay";
+import CryptoLogo from "./crypto-logo";
+import PriceDisplay from "./price-display";
 
 interface CryptoCardProps {
   crypto: Crypto;
@@ -39,8 +39,12 @@ export default function CryptoCard({ crypto }: CryptoCardProps) {
             />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold text-[var(--text-primary)]">{crypto.name}</h2>
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">{crypto.symbol}</p>
+            <h2 className="truncate text-sm font-semibold text-[var(--text-primary)]">
+              {crypto.name}
+            </h2>
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+              {crypto.symbol}
+            </p>
           </div>
         </header>
 

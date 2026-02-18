@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import HomeContent from "@/domains/crypto/components/HomeContent";
+import HomeContent from "@/domains/crypto/components/home-content";
 
 export default function Home() {
   return (

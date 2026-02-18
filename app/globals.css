@@ -53,7 +53,7 @@
   --card-bg: rgba(255, 255, 255, 0.04);
   --card-border: rgba(34, 197, 94, 0.15);
   --card-hover-border: rgba(34, 197, 94, 0.4);
-  --header-bg: rgba(10, 15, 13, 0.80);
+  --header-bg: rgba(10, 15, 13, 0.8);
   --accent: #22c55e;
   --accent-glow: rgba(34, 197, 94, 0.15);
   --positive: #22c55e;
@@ -79,10 +79,10 @@
   --blob-1-size: 500px;
   --blob-1-color: rgba(34, 197, 94, 0.55);
   --blob-2-size: 350px;
-  --blob-2-color: rgba(16, 185, 129, 0.40);
+  --blob-2-color: rgba(16, 185, 129, 0.4);
   --blob-blur: 120px;
-  --blob-pulse-min: 0.30;
-  --blob-pulse-max: 0.40;
+  --blob-pulse-min: 0.3;
+  --blob-pulse-max: 0.4;
 
   /* Dot overlay */
   --dot-color: rgba(255, 255, 255, 0.03);
@@ -100,7 +100,11 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family:
+    var(--font-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -109,31 +113,54 @@ body {
 
 /* Horizontal bounce: travels from left edge to right edge and back */
 @keyframes bounce-x {
-  0%   { left: -10%; }
-  100% { left: calc(100% - 450px); }
+  0% {
+    left: -10%;
+  }
+  100% {
+    left: calc(100% - 450px);
+  }
 }
 
 /* Vertical bounce: travels from top edge to bottom edge and back */
 @keyframes bounce-y {
-  0%   { top: -8%; }
-  100% { top: calc(100% - 450px); }
+  0% {
+    top: -8%;
+  }
+  100% {
+    top: calc(100% - 450px);
+  }
 }
 
 /* Secondary blob axes (offset timing) */
 @keyframes bounce-x2 {
-  0%   { left: calc(100% - 350px); }
-  100% { left: -5%; }
+  0% {
+    left: calc(100% - 350px);
+  }
+  100% {
+    left: -5%;
+  }
 }
 
 @keyframes bounce-y2 {
-  0%   { top: calc(100% - 350px); }
-  100% { top: -5%; }
+  0% {
+    top: calc(100% - 350px);
+  }
+  100% {
+    top: -5%;
+  }
 }
 
 /* Gentle pulsing so the blob feels alive */
 @keyframes blob-pulse {
-  0%, 100% { transform: scale(1);   opacity: var(--blob-pulse-min); }
-  50%      { transform: scale(1.15); opacity: var(--blob-pulse-max); }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: var(--blob-pulse-min);
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: var(--blob-pulse-max);
+  }
 }
 
 .bg-blobs {
@@ -156,8 +183,8 @@ body {
   height: var(--blob-1-size);
   background: radial-gradient(circle, var(--blob-1-color) 0%, transparent 70%);
   animation:
-    bounce-x  25s ease-in-out infinite alternate,
-    bounce-y  18s ease-in-out infinite alternate,
+    bounce-x 25s ease-in-out infinite alternate,
+    bounce-y 18s ease-in-out infinite alternate,
     blob-pulse 8s ease-in-out infinite;
 }
 

@@ -1,7 +1,8 @@
 "use client";
 
-export type SortKey = "name" | "price" | "change24h" | "marketCap" | "volume24h";
-export type SortDirection = "asc" | "desc";
+import type { SortKey, SortDirection } from "@/domains/crypto/types/crypto.types";
+
+export type { SortKey, SortDirection };
 
 interface SortControlsProps {
   sortKey: SortKey;
@@ -37,7 +38,11 @@ export default function SortControls({
         className="appearance-none rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-1.5 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur-xl outline-none transition-colors hover:border-[var(--card-hover-border)] focus:border-green-500/40 focus:ring-1 focus:ring-green-500/20"
       >
         {sortOptions.map((opt) => (
-          <option key={opt.value} value={opt.value} className="bg-[var(--select-bg)] text-[var(--text-primary)]">
+          <option
+            key={opt.value}
+            value={opt.value}
+            className="bg-[var(--select-bg)] text-[var(--text-primary)]"
+          >
             {opt.label}
           </option>
         ))}

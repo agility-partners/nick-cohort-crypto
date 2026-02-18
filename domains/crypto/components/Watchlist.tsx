@@ -1,8 +1,8 @@
 "use client";
 
-import type { Crypto } from "@/domains/crypto/mock/cryptos.mock";
+import type { Crypto } from "@/domains/crypto/types/crypto.types";
 
-import CryptoGrid from "./CryptoGrid";
+import CryptoGrid from "./crypto-grid";
 
 interface WatchlistProps {
   cryptos: Crypto[];

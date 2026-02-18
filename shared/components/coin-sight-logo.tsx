@@ -47,7 +47,15 @@ export default function CoinSightLogo({
 
       {/* ── Background circle ── */}
       <circle cx="32" cy="32" r="30" fill="var(--logo-bg)" />
-      <circle cx="32" cy="32" r="30" stroke="url(#cs-grad)" strokeWidth="1.5" strokeOpacity="0.4" fill="none" />
+      <circle
+        cx="32"
+        cy="32"
+        r="30"
+        stroke="url(#cs-grad)"
+        strokeWidth="1.5"
+        strokeOpacity="0.4"
+        fill="none"
+      />
 
       {/* ── Eye shape (two arcs forming an almond) ── */}
       <g filter="url(#cs-glow)">
@@ -74,8 +82,24 @@ export default function CoinSightLogo({
       <circle cx="32" cy="32" r="10.5" fill="url(#cs-shine)" />
 
       {/* Coin rim (double ring like a real coin edge) */}
-      <circle cx="32" cy="32" r="10.5" stroke="#4ade80" strokeWidth="1.2" strokeOpacity="0.6" fill="none" />
-      <circle cx="32" cy="32" r="8.2" stroke="#4ade80" strokeWidth="0.6" strokeOpacity="0.35" fill="none" />
+      <circle
+        cx="32"
+        cy="32"
+        r="10.5"
+        stroke="#4ade80"
+        strokeWidth="1.2"
+        strokeOpacity="0.6"
+        fill="none"
+      />
+      <circle
+        cx="32"
+        cy="32"
+        r="8.2"
+        stroke="#4ade80"
+        strokeWidth="0.6"
+        strokeOpacity="0.35"
+        fill="none"
+      />
 
       {/* Dollar sign in the coin */}
       <text

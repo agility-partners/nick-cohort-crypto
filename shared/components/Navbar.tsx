@@ -2,25 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-
-const navItems = [
-  { label: "Market Cap", view: "all", href: "/" },
-  { label: "Top Gainers", view: "gainers", href: "/?view=gainers" },
-  { label: "Top Losers", view: "losers", href: "/?view=losers" },
-  { label: "Highest Volume", view: "volume", href: "/?view=volume" },
-];
+import { NAV_ITEMS, VIEW_MODE } from "@/domains/crypto/constants";
 
 export default function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentView = searchParams.get("view") || "all";
+  const currentView = searchParams.get("view") || VIEW_MODE.ALL;
   const isHome = pathname === "/";
 
   return (
     <nav className="border-b border-[var(--card-border)] bg-[var(--header-bg)] backdrop-blur-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ul className="flex h-11 items-center gap-1" role="list">
-          {navItems.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive = isHome && currentView === item.view;
             return (
               <li key={item.view}>

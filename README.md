@@ -108,7 +108,6 @@ Detailed docs:
 ## Configuration Notes
 
 - `next.config.ts` allows remote images from:
-	- `assets.coingecko.com`
-	- `cryptologos.cc`
+  - `assets.coingecko.com`
+  - `cryptologos.cc`
 - TypeScript path alias `@/*` is configured in `tsconfig.json`.
-
