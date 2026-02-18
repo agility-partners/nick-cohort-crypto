@@ -10,7 +10,7 @@ import { mockCryptos, type Crypto } from "@/src/data/mockCryptos";
 type ViewMode = "all" | "gainers" | "losers" | "volume";
 
 const viewMeta: Record<ViewMode, { title: string }> = {
-  all:     { title: "All Coins" },
+  all:     { title: "Market Cap" },
   gainers: { title: "Top Gainers" },
   losers:  { title: "Top Losers" },
   volume:  { title: "Highest Volume" },

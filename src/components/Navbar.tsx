@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
 const navItems = [
-  { label: "All Coins", view: "all", href: "/" },
+  { label: "Market Cap", view: "all", href: "/" },
   { label: "Top Gainers", view: "gainers", href: "/?view=gainers" },
   { label: "Top Losers", view: "losers", href: "/?view=losers" },
   { label: "Highest Volume", view: "volume", href: "/?view=volume" },
