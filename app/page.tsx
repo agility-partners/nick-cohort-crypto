@@ -73,8 +73,8 @@ function HomeContent() {
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <h2 className="text-2xl font-bold text-gray-100 sm:text-3xl">{title}</h2>
-          <span className="ml-1 rounded-full bg-white/[0.06] px-2.5 py-0.5 text-xs font-medium text-gray-400">
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">{title}</h2>
+          <span className="ml-1 rounded-full bg-[var(--badge-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
             {mockCryptos.length}
           </span>
         </div>

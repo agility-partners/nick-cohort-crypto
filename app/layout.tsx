@@ -5,6 +5,7 @@ import "./globals.css";
 
 import Header from "@/src/components/Header";
 import Navbar from "@/src/components/Navbar";
+import ThemeProvider from "@/src/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,23 +28,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* animated bouncing green blobs */}
-        <div className="bg-blobs" aria-hidden="true">
-          <div className="blob blob-1" />
-          <div className="blob blob-2" />
-        </div>
+        <ThemeProvider>
+          {/* animated bouncing green blobs */}
+          <div className="bg-blobs" aria-hidden="true">
+            <div className="blob blob-1" />
+            <div className="blob blob-2" />
+          </div>
 
-        <div className="relative z-10">
-          <Header />
-          <Suspense>
-            <Navbar />
-          </Suspense>
-          {children}
-        </div>
+          <div className="relative z-10">
+            <Header />
+            <Suspense>
+              <Navbar />
+            </Suspense>
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

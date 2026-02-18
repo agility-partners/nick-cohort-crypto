@@ -21,8 +21,8 @@ export default function PriceDisplay({ price, change, size = "sm" }: PriceDispla
 
   const priceClasses =
     size === "lg"
-      ? "text-2xl font-bold text-green-400"
-      : "text-base font-semibold text-gray-200";
+      ? "text-2xl font-bold text-[var(--accent)]"
+      : "text-base font-semibold text-[var(--text-primary)]";
 
   return (
     <div className="flex flex-col items-end gap-0.5">
@@ -31,8 +31,8 @@ export default function PriceDisplay({ price, change, size = "sm" }: PriceDispla
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
             isPositive
-              ? "bg-green-500/15 text-green-400"
-              : "bg-rose-500/15 text-rose-400"
+              ? "bg-green-500/15 text-[var(--positive)]"
+              : "bg-rose-500/15 text-[var(--negative)]"
           }`}
         >
           <span aria-hidden="true">{isPositive ? "▲" : "▼"}</span>

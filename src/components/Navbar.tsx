@@ -17,7 +17,7 @@ export default function Navbar() {
   const isHome = pathname === "/";
 
   return (
-    <nav className="border-b border-white/[0.04] bg-[#0a0f0d]/60 backdrop-blur-lg">
+    <nav className="border-b border-[var(--card-border)] bg-[var(--header-bg)] backdrop-blur-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ul className="flex h-11 items-center gap-1" role="list">
           {navItems.map((item) => {
@@ -28,8 +28,8 @@ export default function Navbar() {
                   href={item.href}
                   className={`relative block whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
                     isActive
-                      ? "bg-green-500/[0.1] text-green-400"
-                      : "text-gray-400 hover:bg-white/[0.04] hover:text-gray-200"
+                      ? "bg-green-500/[0.1] text-[var(--accent)]"
+                      : "text-[var(--text-muted)] hover:bg-[var(--badge-bg)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   {item.label}

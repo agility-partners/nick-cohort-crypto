@@ -27,7 +27,7 @@ export default function CryptoLogo({
     return (
       <span
         aria-label={`${name} fallback logo`}
-        className={`flex items-center justify-center rounded-full bg-white/20 text-sm font-bold text-gray-100 ${className ?? ""}`.trim()}
+        className={`flex items-center justify-center rounded-full bg-[var(--badge-bg)] text-sm font-bold text-[var(--text-primary)] ${className ?? ""}`.trim()}
         style={{ width: size, height: size }}
       >
         {fallbackText}

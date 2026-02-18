@@ -46,7 +46,7 @@ export default function CoinSightLogo({
       </defs>
 
       {/* ── Background circle ── */}
-      <circle cx="32" cy="32" r="30" fill="#0d1a14" />
+      <circle cx="32" cy="32" r="30" fill="var(--logo-bg)" />
       <circle cx="32" cy="32" r="30" stroke="url(#cs-grad)" strokeWidth="1.5" strokeOpacity="0.4" fill="none" />
 
       {/* ── Eye shape (two arcs forming an almond) ── */}
@@ -92,7 +92,7 @@ export default function CoinSightLogo({
       </text>
 
       {/* ── Pupil (small dark center dot) ── */}
-      <circle cx="32" cy="32" r="3" fill="#0d1a14" opacity="0.5" />
+      <circle cx="32" cy="32" r="3" fill="var(--logo-bg)" opacity="0.5" />
 
       {/* Highlight / light reflection on coin */}
       <circle cx="28.5" cy="28.5" r="2" fill="white" opacity="0.15" />

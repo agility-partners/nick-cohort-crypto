@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { mockCryptos } from "@/src/data/mockCryptos";
 import CoinSightLogo from "./CoinSightLogo";
+import ThemeToggle from "./ThemeToggle";
 
 const compactFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -16,7 +17,7 @@ export default function Header() {
     mockCryptos.reduce((sum, c) => sum + c.change24h, 0) / mockCryptos.length;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0a0f0d]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[var(--card-border)] bg-[var(--header-bg)] backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-2.5">
@@ -26,18 +27,21 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Market snapshot chips */}
-        <div className="hidden items-center gap-2 sm:flex">
-          <StatChip label="Coins" value={String(totalCoins)} />
-          <StatChip
-            label="Total MCap"
-            value={compactFormatter.format(totalMarketCap)}
-          />
-          <StatChip
-            label="Avg 24h"
-            value={`${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`}
-            color={avgChange >= 0 ? "positive" : "negative"}
-          />
+        {/* Market snapshot chips + theme toggle */}
+        <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex">
+            <StatChip label="Coins" value={String(totalCoins)} />
+            <StatChip
+              label="Total MCap"
+              value={compactFormatter.format(totalMarketCap)}
+            />
+            <StatChip
+              label="Avg 24h"
+              value={`${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`}
+              color={avgChange >= 0 ? "positive" : "negative"}
+            />
+          </div>
+          <ThemeToggle />
         </div>
       </div>
     </header>
@@ -56,14 +60,14 @@ function StatChip({
 }) {
   const valueColor =
     color === "positive"
-      ? "text-green-400"
+      ? "text-[var(--positive)]"
       : color === "negative"
-        ? "text-rose-400"
-        : "text-gray-200";
+        ? "text-[var(--negative)]"
+        : "text-[var(--text-primary)]";
 
   return (
-    <div className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1">
-      <span className="text-[11px] uppercase tracking-wider text-gray-500">
+    <div className="flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-2.5 py-1">
+      <span className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
         {label}
       </span>
       <span className={`text-xs font-semibold ${valueColor}`}>{value}</span>

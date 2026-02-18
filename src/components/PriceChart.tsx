@@ -91,13 +91,13 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
   }
 
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-300">Price Chart</h2>
-          <p className="mt-1 text-xs text-gray-500">Mock 7D trend · {symbol}/USD</p>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-primary)]">Price Chart</h2>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Mock 7D trend · {symbol}/USD</p>
         </div>
-        <div className="text-right text-xs text-gray-400">
+        <div className="text-right text-xs text-[var(--text-secondary)]">
           <p>High: ${high.toFixed(2)}</p>
           <p>Low: ${low.toFixed(2)}</p>
         </div>
@@ -106,7 +106,7 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
       <svg
         ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
-        className="h-64 w-full cursor-crosshair text-green-400"
+        className="h-64 w-full cursor-crosshair text-[var(--accent)]"
         role="img"
         aria-label={`${symbol} 7 day mock price chart`}
         onMouseMove={handleMouseMove}
@@ -128,7 +128,7 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
               y1={y}
               x2={width - padding}
               y2={y}
-              stroke="rgba(255,255,255,0.08)"
+              stroke="var(--grid-line)"
               strokeWidth="1"
             />
           );
@@ -156,7 +156,7 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
               y1={padding}
               x2={activePoint.x}
               y2={height - padding}
-              stroke="rgba(255,255,255,0.3)"
+              stroke="var(--crosshair)"
               strokeWidth="1"
               strokeDasharray="4 3"
               pointerEvents="none"
@@ -180,8 +180,8 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
               width={tooltipWidth}
               height={tooltipHeight}
               rx={8}
-              fill="rgba(17,17,17,0.92)"
-              stroke="rgba(255,255,255,0.12)"
+              fill="var(--tooltip-bg)"
+              stroke="var(--tooltip-border)"
               strokeWidth="1"
               pointerEvents="none"
             />
@@ -191,7 +191,7 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
               x={tooltipX + tooltipWidth / 2}
               y={tooltipY + 20}
               textAnchor="middle"
-              fill="#e5e7eb"
+              fill="var(--tooltip-text)"
               fontSize="14"
               fontWeight="600"
               pointerEvents="none"
@@ -204,7 +204,7 @@ export default function PriceChart({ values, labels, symbol }: PriceChartProps) 
               x={tooltipX + tooltipWidth / 2}
               y={tooltipY + 38}
               textAnchor="middle"
-              fill="#9ca3af"
+              fill="var(--tooltip-text-muted)"
               fontSize="11"
               pointerEvents="none"
             >
