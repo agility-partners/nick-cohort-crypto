@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { mockCryptos } from "@/src/data/mockCryptos";
+import { mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
 import CoinSightLogo from "./CoinSightLogo";
 import ThemeToggle from "./ThemeToggle";
 

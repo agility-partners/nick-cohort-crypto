@@ -1,6 +1,6 @@
 "use client";
 
-import type { Crypto } from "@/src/data/mockCryptos";
+import type { Crypto } from "@/domains/crypto/mock/cryptos.mock";
 
 import CryptoGrid from "./CryptoGrid";
 

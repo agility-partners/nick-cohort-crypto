@@ -3,9 +3,9 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import Header from "@/src/components/Header";
-import Navbar from "@/src/components/Navbar";
-import ThemeProvider from "@/src/components/ThemeProvider";
+import Header from "@/shared/components/Header";
+import Navbar from "@/shared/components/Navbar";
+import ThemeProvider from "@/shared/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

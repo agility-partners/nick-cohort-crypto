@@ -3,9 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import ChartSection from "@/src/components/ChartSection";
-import PriceDisplay from "@/src/components/PriceDisplay";
-import { getCryptoById, mockCryptos } from "@/src/data/mockCryptos";
+import ChartSection from "@/domains/crypto/components/ChartSection";
+import PriceDisplay from "@/domains/crypto/components/PriceDisplay";
+import { getCryptoById, mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
 
 interface CryptoDetailPageProps {
   params: Promise<{ id: string }>;

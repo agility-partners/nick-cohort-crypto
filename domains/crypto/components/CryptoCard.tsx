@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import type { Crypto } from "@/src/data/mockCryptos";
+import type { Crypto } from "@/domains/crypto/mock/cryptos.mock";
 
 import CryptoLogo from "./CryptoLogo";
 import PriceDisplay from "./PriceDisplay";
