@@ -24,9 +24,13 @@ function getSeedFromId(id: string) {
 
 function createMockSeries(crypto: Crypto, points = 36) {
   const values: number[] = [];
+  const labels: string[] = [];
   let seed = getSeedFromId(crypto.id);
   let current = Math.max(crypto.price * (1 - crypto.change24h / 100), 0.0001);
   const trendStep = (crypto.change24h / 100) / points;
+
+  const now = new Date();
+  const msPerStep = (7 * 24 * 60 * 60 * 1000) / (points - 1);
 
   for (let index = 0; index < points; index += 1) {
     seed = (seed * 1664525 + 1013904223) % 4294967296;
@@ -35,10 +39,20 @@ function createMockSeries(crypto: Crypto, points = 36) {
 
     current = Math.max(current * (1 + trendStep + noise), 0.0001);
     values.push(current);
+
+    const date = new Date(now.getTime() - (points - 1 - index) * msPerStep);
+    labels.push(
+      date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    );
   }
 
   values[values.length - 1] = crypto.price;
-  return values;
+  return { values, labels };
 }
 
 export function generateStaticParams() {
@@ -70,10 +84,10 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
     notFound();
   }
 
-  const mockSeries = createMockSeries(crypto);
+  const { values: mockSeries, labels: mockLabels } = createMockSeries(crypto);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
         <Link
           href="/"
@@ -137,7 +151,7 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
           </div>
 
           <div className="min-w-0 xl:mt-8">
-            <PriceChart values={mockSeries} symbol={crypto.symbol} />
+            <PriceChart values={mockSeries} labels={mockLabels} symbol={crypto.symbol} />
           </div>
         </div>
       </section>

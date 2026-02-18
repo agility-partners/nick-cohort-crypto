@@ -1,6 +1,6 @@
 "use client";
 
-export type SortKey = "name" | "price" | "change24h" | "marketCap";
+export type SortKey = "name" | "price" | "change24h" | "marketCap" | "volume24h";
 export type SortDirection = "asc" | "desc";
 
 interface SortControlsProps {
@@ -14,6 +14,7 @@ const sortOptions: { value: SortKey; label: string }[] = [
   { value: "marketCap", label: "Market Cap" },
   { value: "price", label: "Price" },
   { value: "change24h", label: "24h Change" },
+  { value: "volume24h", label: "24h Volume" },
   { value: "name", label: "Name" },
 ];
 
