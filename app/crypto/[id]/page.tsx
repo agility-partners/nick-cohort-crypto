@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import CryptoLogo from "@/src/components/CryptoLogo";
 import PriceChart from "@/src/components/PriceChart";
 import PriceDisplay from "@/src/components/PriceDisplay";
 import { type Crypto, getCryptoById, mockCryptos } from "@/src/data/mockCryptos";
@@ -24,13 +24,9 @@ function getSeedFromId(id: string) {
 
 function createMockSeries(crypto: Crypto, points = 36) {
   const values: number[] = [];
-  const labels: string[] = [];
   let seed = getSeedFromId(crypto.id);
   let current = Math.max(crypto.price * (1 - crypto.change24h / 100), 0.0001);
   const trendStep = (crypto.change24h / 100) / points;
-
-  const now = new Date();
-  const msPerStep = (7 * 24 * 60 * 60 * 1000) / (points - 1);
 
   for (let index = 0; index < points; index += 1) {
     seed = (seed * 1664525 + 1013904223) % 4294967296;
@@ -39,20 +35,28 @@ function createMockSeries(crypto: Crypto, points = 36) {
 
     current = Math.max(current * (1 + trendStep + noise), 0.0001);
     values.push(current);
-
-    const date = new Date(now.getTime() - (points - 1 - index) * msPerStep);
-    labels.push(
-      date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    );
   }
 
   values[values.length - 1] = crypto.price;
-  return { values, labels };
+  return values;
+}
+
+function createMockLabels(points = 36) {
+  const labels: string[] = [];
+  const now = new Date();
+  const stepMs = (7 * 24 * 60 * 60 * 1000) / Math.max(points - 1, 1);
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+  });
+
+  for (let index = 0; index < points; index += 1) {
+    const timestamp = new Date(now.getTime() - (points - 1 - index) * stepMs);
+    labels.push(formatter.format(timestamp));
+  }
+
+  return labels;
 }
 
 export function generateStaticParams() {
@@ -84,35 +88,36 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
     notFound();
   }
 
-  const { values: mockSeries, labels: mockLabels } = createMockSeries(crypto);
+  const mockSeries = createMockSeries(crypto);
+  const mockLabels = createMockLabels(mockSeries.length);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
         <Link
           href="/"
-          className="inline-flex items-center text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--accent)]"
+          className="inline-flex items-center text-sm font-medium text-gray-400 transition-colors hover:text-green-400"
         >
           ← Back to watchlist
         </Link>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-lg shadow-[var(--shadow-color)] backdrop-blur-xl sm:p-8">
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-lg shadow-black/20 backdrop-blur-xl sm:p-8">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <div>
             <header className="mb-8 flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-4">
-                <CryptoLogo
+                <Image
                   src={crypto.image}
-                  name={crypto.name}
-                  symbol={crypto.symbol}
-                  size={56}
-                  className="h-14 w-14 rounded-full object-cover ring-1 ring-[var(--ring-color)]"
+                  alt={`${crypto.name} logo`}
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 rounded-full object-cover ring-1 ring-white/10"
                   priority
                 />
                 <div className="min-w-0">
-                  <h1 className="truncate text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">{crypto.name}</h1>
-                  <p className="mt-1 text-sm font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+                  <h1 className="truncate text-3xl font-bold text-gray-100 sm:text-4xl">{crypto.name}</h1>
+                  <p className="mt-1 text-sm font-medium uppercase tracking-wider text-gray-400">
                     {crypto.symbol}
                   </p>
                 </div>
@@ -124,24 +129,24 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
             </header>
 
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4">
-                <dt className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Market Cap</dt>
-                <dd className="mt-2 text-xl font-semibold text-[var(--text-primary)]">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <dt className="text-xs uppercase tracking-wider text-gray-500">Market Cap</dt>
+                <dd className="mt-2 text-xl font-semibold text-gray-100">
                   {compactCurrencyFormatter.format(crypto.marketCap)}
                 </dd>
               </div>
 
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4">
-                <dt className="text-xs uppercase tracking-wider text-[var(--text-muted)]">24h Volume</dt>
-                <dd className="mt-2 text-xl font-semibold text-[var(--text-primary)]">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <dt className="text-xs uppercase tracking-wider text-gray-500">24h Volume</dt>
+                <dd className="mt-2 text-xl font-semibold text-gray-100">
                   {compactCurrencyFormatter.format(crypto.volume24h)}
                 </dd>
               </div>
 
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4">
-                <dt className="text-xs uppercase tracking-wider text-[var(--text-muted)]">24h Change</dt>
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <dt className="text-xs uppercase tracking-wider text-gray-500">24h Change</dt>
                 <dd
-                  className={`mt-2 text-xl font-semibold ${crypto.change24h >= 0 ? "text-[var(--positive)]" : "text-[var(--negative)]"}`}
+                  className={`mt-2 text-xl font-semibold ${crypto.change24h >= 0 ? "text-green-400" : "text-rose-400"}`}
                 >
                   {crypto.change24h >= 0 ? "+" : ""}
                   {crypto.change24h.toFixed(2)}%
