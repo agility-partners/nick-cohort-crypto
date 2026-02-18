@@ -9,6 +9,9 @@ export interface Crypto {
   marketCap: number;
   volume24h: number;
   image: string;
+  circulatingSupply: number; // New field
+  allTimeHigh: number; // New field
+  allTimeLow: number; // New field
 }
 
 /* ── Sorting ── */

@@ -86,7 +86,7 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
               </div>
             </header>
 
-            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
                 <dt className="text-xs uppercase tracking-wider text-gray-500">Market Cap</dt>
                 <dd className="mt-2 text-xl font-semibold text-foreground">
@@ -108,6 +108,33 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
                 >
                   {crypto.change24h >= 0 ? "+" : ""}
                   {crypto.change24h.toFixed(2)}%
+                </dd>
+              </div>
+
+              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
+                <dt className="text-xs uppercase tracking-wider text-gray-500">Circulating Supply</dt>
+                <dd className="mt-2 text-xl font-semibold text-foreground">
+                  {compactCurrencyFormatter.format(crypto.circulatingSupply)}
+                </dd>
+              </div>
+
+              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
+                <dt className="text-xs uppercase tracking-wider text-gray-500">All-Time High</dt>
+                <dd className="mt-2 text-xl font-semibold text-green-400">
+                  ${crypto.allTimeHigh.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </dd>
+              </div>
+
+              <div className="rounded-xl border p-4" style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}>
+                <dt className="text-xs uppercase tracking-wider text-gray-500">All-Time Low</dt>
+                <dd className="mt-2 text-xl font-semibold text-rose-400">
+                  ${crypto.allTimeLow.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: crypto.allTimeLow < 0.01 ? 8 : 2,
+                  })}
                 </dd>
               </div>
             </dl>
