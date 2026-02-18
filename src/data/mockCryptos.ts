@@ -18,7 +18,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 2.14,
     marketCap: 1340000000000,
     volume24h: 31200000000,
-    image: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png",
+    image: "https://coin-images.coingecko.com/coins/images/1/small/bitcoin.png",
   },
   {
     id: "ethereum",
@@ -28,7 +28,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -1.08,
     marketCap: 419000000000,
     volume24h: 16800000000,
-    image: "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
+    image: "https://coin-images.coingecko.com/coins/images/279/small/ethereum.png",
   },
   {
     id: "solana",
@@ -38,7 +38,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 4.62,
     marketCap: 74400000000,
     volume24h: 2900000000,
-    image: "https://assets.coingecko.com/coins/images/4128/small/solana.png",
+    image: "https://coin-images.coingecko.com/coins/images/4128/small/solana.png",
   },
   {
     id: "cardano",
@@ -48,7 +48,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -0.89,
     marketCap: 26200000000,
     volume24h: 680000000,
-    image: "https://assets.coingecko.com/coins/images/975/small/cardano.png",
+    image: "https://coin-images.coingecko.com/coins/images/975/small/cardano.png",
   },
   {
     id: "ripple",
@@ -58,7 +58,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 1.73,
     marketCap: 34700000000,
     volume24h: 1240000000,
-    image: "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png",
+    image: "https://coin-images.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png",
   },
   {
     id: "binancecoin",
@@ -68,7 +68,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -2.31,
     marketCap: 84200000000,
     volume24h: 1570000000,
-    image: "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png",
+    image: "https://coin-images.coingecko.com/coins/images/825/small/bnb-icon2_2x.png",
   },
   {
     id: "dogecoin",
@@ -78,7 +78,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 5.04,
     marketCap: 21900000000,
     volume24h: 930000000,
-    image: "https://assets.coingecko.com/coins/images/5/small/dogecoin.png",
+    image: "https://coin-images.coingecko.com/coins/images/5/small/dogecoin.png",
   },
   {
     id: "avalanche",
@@ -88,7 +88,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -1.44,
     marketCap: 14600000000,
     volume24h: 540000000,
-    image: "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
+    image: "https://coin-images.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
   },
   {
     id: "polkadot",
@@ -98,7 +98,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 3.15,
     marketCap: 10700000000,
     volume24h: 320000000,
-    image: "https://assets.coingecko.com/coins/images/12171/small/polkadot.png",
+    image: "https://coin-images.coingecko.com/coins/images/12171/small/polkadot.png",
   },
   {
     id: "chainlink",
@@ -108,7 +108,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 1.92,
     marketCap: 11200000000,
     volume24h: 580000000,
-    image: "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
+    image: "https://coin-images.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
   },
   {
     id: "polygon",
@@ -118,7 +118,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -2.67,
     marketCap: 5400000000,
     volume24h: 290000000,
-    image: "https://assets.coingecko.com/coins/images/4713/small/polygon.png",
+    image: "https://coin-images.coingecko.com/coins/images/4713/small/polygon.png",
   },
   {
     id: "litecoin",
@@ -128,7 +128,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 0.87,
     marketCap: 6900000000,
     volume24h: 410000000,
-    image: "https://assets.coingecko.com/coins/images/2/small/litecoin.png",
+    image: "https://coin-images.coingecko.com/coins/images/2/small/litecoin.png",
   },
   {
     id: "uniswap",
@@ -148,7 +148,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 2.08,
     marketCap: 3600000000,
     volume24h: 180000000,
-    image: "https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png",
+    image: "https://coin-images.coingecko.com/coins/images/1481/small/cosmos_hub.png",
   },
   {
     id: "stellar",
@@ -158,7 +158,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 1.35,
     marketCap: 3500000000,
     volume24h: 120000000,
-    image: "https://assets.coingecko.com/coins/images/100/small/Stellar_symbol_black_RGB.png",
+    image: "https://coin-images.coingecko.com/coins/images/100/small/Stellar_symbol_black_RGB.png",
   },
   {
     id: "near",
@@ -168,7 +168,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 6.23,
     marketCap: 6200000000,
     volume24h: 340000000,
-    image: "https://assets.coingecko.com/coins/images/10365/small/near.jpg",
+    image: "https://coin-images.coingecko.com/coins/images/10365/small/near.jpg",
   },
   {
     id: "filecoin",
@@ -178,7 +178,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -1.76,
     marketCap: 3200000000,
     volume24h: 150000000,
-    image: "https://assets.coingecko.com/coins/images/12817/small/filecoin.png",
+    image: "https://coin-images.coingecko.com/coins/images/12817/small/filecoin.png",
   },
   {
     id: "arbitrum",
@@ -188,7 +188,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 4.38,
     marketCap: 4600000000,
     volume24h: 420000000,
-    image: "https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg",
+    image: "https://coin-images.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg",
   },
   {
     id: "optimism",
@@ -198,7 +198,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 3.72,
     marketCap: 3100000000,
     volume24h: 210000000,
-    image: "https://assets.coingecko.com/coins/images/25244/small/Optimism.png",
+    image: "https://coin-images.coingecko.com/coins/images/25244/small/Optimism.png",
   },
   {
     id: "aptos",
@@ -208,7 +208,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -2.19,
     marketCap: 3900000000,
     volume24h: 190000000,
-    image: "https://assets.coingecko.com/coins/images/26455/small/aptos_round.png",
+    image: "https://coin-images.coingecko.com/coins/images/26455/small/aptos_round.png",
   },
   {
     id: "sui",
@@ -218,7 +218,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 7.84,
     marketCap: 4100000000,
     volume24h: 380000000,
-    image: "https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png",
+    image: "https://coin-images.coingecko.com/coins/images/26375/small/sui-ocean-square.png",
   },
   {
     id: "toncoin",
@@ -228,7 +228,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 1.16,
     marketCap: 13200000000,
     volume24h: 270000000,
-    image: "https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png",
+    image: "https://coin-images.coingecko.com/coins/images/17980/small/ton_symbol.png",
   },
   {
     id: "render",
@@ -238,7 +238,7 @@ export const mockCryptos: Crypto[] = [
     change24h: 5.47,
     marketCap: 3800000000,
     volume24h: 310000000,
-    image: "https://assets.coingecko.com/coins/images/11636/small/rndr.png",
+    image: "https://coin-images.coingecko.com/coins/images/11636/small/rndr.png",
   },
   {
     id: "injective",
@@ -248,7 +248,7 @@ export const mockCryptos: Crypto[] = [
     change24h: -0.93,
     marketCap: 2400000000,
     volume24h: 140000000,
-    image: "https://assets.coingecko.com/coins/images/12882/small/Secondary_Symbol.png",
+    image: "https://coin-images.coingecko.com/coins/images/12882/small/Secondary_Symbol.png",
   },
 ];
 

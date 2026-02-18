@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
 import type { Crypto } from "@/src/data/mockCryptos";
 
+import CryptoLogo from "./CryptoLogo";
 import PriceDisplay from "./PriceDisplay";
 
 interface CryptoCardProps {
@@ -17,8 +16,6 @@ interface CryptoCardProps {
  * glassmorphic card that links to its detail route.
  */
 export default function CryptoCard({ crypto }: CryptoCardProps) {
-  const [imgError, setImgError] = useState(false);
-
   return (
     <Link
       href={`/crypto/${crypto.id}`}
@@ -33,20 +30,13 @@ export default function CryptoCard({ crypto }: CryptoCardProps) {
       <article className="flex items-center justify-between gap-4">
         <header className="flex min-w-0 items-center gap-3">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-1 ring-white/10">
-            {imgError ? (
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-gray-100">
-                {crypto.symbol.slice(0, 2)}
-              </span>
-            ) : (
-              <Image
-                src={crypto.image}
-                alt={`${crypto.name} logo`}
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full object-cover"
-                onError={() => setImgError(true)}
-              />
-            )}
+            <CryptoLogo
+              src={crypto.image}
+              name={crypto.name}
+              symbol={crypto.symbol}
+              size={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold text-gray-100">{crypto.name}</h2>

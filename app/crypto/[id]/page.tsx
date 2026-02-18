@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CryptoLogo from "@/src/components/CryptoLogo";
 import PriceChart from "@/src/components/PriceChart";
 import PriceDisplay from "@/src/components/PriceDisplay";
 import { type Crypto, getCryptoById, mockCryptos } from "@/src/data/mockCryptos";
@@ -88,11 +88,11 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
           <div>
             <header className="mb-8 flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-4">
-                <Image
+                <CryptoLogo
                   src={crypto.image}
-                  alt={`${crypto.name} logo`}
-                  width={56}
-                  height={56}
+                  name={crypto.name}
+                  symbol={crypto.symbol}
+                  size={56}
                   className="h-14 w-14 rounded-full object-cover ring-1 ring-white/10"
                   priority
                 />
