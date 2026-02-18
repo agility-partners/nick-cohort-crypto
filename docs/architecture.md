@@ -35,7 +35,10 @@ CryptoDetailPage
 → back link
 → coin header + PriceDisplay (lg)
 → market metrics (market cap, volume, 24h change)
-→ PriceChart             (interactive SVG, mock 7-day series)
+→ ChartSection            (client; owns time-range & chart-type state)
+  → time-range pill bar   (1D, 7D, 30D, 90D, 1Y, ALL)
+  → chart-type toggle     (Line / Candle)
+  → PriceChart            (interactive SVG; line or candlestick mode)
 ```
 
 ## Key Architectural Decisions
@@ -43,10 +46,10 @@ CryptoDetailPage
 | Decision | Detail |
 |---|---|
 | **Data source** | Static `mockCryptos` array with `Crypto` interface and `getCryptoById()` helper |
-| **Theming** | `next-themes` with class-based switching; dual CSS custom-property palettes in `globals.css` (`:root` light, `.dark` dark) |
+| **Theming** | `next-themes` with class-based switching; dual CSS custom-property palettes in `globals.css` (`:root` light, `.dark` dark); includes `--candle-up` / `--candle-down` variables for candlestick chart colors |
 | **View modes** | URL-driven via `?view=` param — `all`, `gainers`, `losers`, `volume`; each view sets a default sort key/direction |
 | **Sorting** | Pure `sortCryptos()` fn, memoized; keys: `name`, `price`, `change24h`, `marketCap`, `volume24h` |
-| **Charts** | Pure SVG `PriceChart` component (no charting library); data from deterministic seeded PRNG in `createMockSeries()` |
+| **Charts** | `ChartSection` (client) manages time-range and chart-type state; generates mock data via seeded PRNG per coin + range. `PriceChart` renders either a line chart (gradient fill + polyline) or a candlestick chart (OHLC wicks + bodies) as pure SVG — no charting library |
 | **Image handling** | `CryptoLogo` wraps `next/image` with fallback initials on error; allowed remote hosts configured in `next.config.ts` |
 | **Hydration safety** | `Suspense` around `useSearchParams` consumers; `suppressHydrationWarning` on `<html>` for theme class injection; `ThemeToggle` defers render until mounted |
 
@@ -66,6 +69,7 @@ No external charting library is used.
 - No API / data-service abstraction
 - No test harness
 - Sort and view state are not persisted (theme is persisted by `next-themes` via localStorage)
+- Chart time-range and type selections are not persisted across navigation
 
 ## Evolution Path
 
