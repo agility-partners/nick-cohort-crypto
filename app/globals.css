@@ -25,6 +25,8 @@
   --tooltip-text: #1a1f1c;
   --tooltip-text-muted: #6b7280;
   --crosshair: rgba(0, 0, 0, 0.2);
+  --candle-up: #16a34a;
+  --candle-down: #e11d48;
   --select-bg: rgba(255, 255, 255, 0.5);
   --logo-bg: #e8e5de;
   --shadow-color: rgba(0, 0, 0, 0.06);
@@ -67,6 +69,8 @@
   --tooltip-text: #e5e7eb;
   --tooltip-text-muted: #9ca3af;
   --crosshair: rgba(255, 255, 255, 0.3);
+  --candle-up: #22c55e;
+  --candle-down: #f43f5e;
   --select-bg: #0a0f0d;
   --logo-bg: #0d1a14;
   --shadow-color: rgba(0, 0, 0, 0.2);

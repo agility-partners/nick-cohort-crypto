@@ -3,9 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import PriceChart from "@/src/components/PriceChart";
+import ChartSection from "@/src/components/ChartSection";
 import PriceDisplay from "@/src/components/PriceDisplay";
-import { type Crypto, getCryptoById, mockCryptos } from "@/src/data/mockCryptos";
+import { getCryptoById, mockCryptos } from "@/src/data/mockCryptos";
 
 interface CryptoDetailPageProps {
   params: Promise<{ id: string }>;
@@ -17,47 +17,6 @@ const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
   maximumFractionDigits: 2,
 });
-
-function getSeedFromId(id: string) {
-  return id.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) || 1;
-}
-
-function createMockSeries(crypto: Crypto, points = 36) {
-  const values: number[] = [];
-  let seed = getSeedFromId(crypto.id);
-  let current = Math.max(crypto.price * (1 - crypto.change24h / 100), 0.0001);
-  const trendStep = (crypto.change24h / 100) / points;
-
-  for (let index = 0; index < points; index += 1) {
-    seed = (seed * 1664525 + 1013904223) % 4294967296;
-    const random = seed / 4294967296;
-    const noise = (random - 0.5) * 0.02;
-
-    current = Math.max(current * (1 + trendStep + noise), 0.0001);
-    values.push(current);
-  }
-
-  values[values.length - 1] = crypto.price;
-  return values;
-}
-
-function createMockLabels(points = 36) {
-  const labels: string[] = [];
-  const now = new Date();
-  const stepMs = (7 * 24 * 60 * 60 * 1000) / Math.max(points - 1, 1);
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-  });
-
-  for (let index = 0; index < points; index += 1) {
-    const timestamp = new Date(now.getTime() - (points - 1 - index) * stepMs);
-    labels.push(formatter.format(timestamp));
-  }
-
-  return labels;
-}
 
 export function generateStaticParams() {
   return mockCryptos.map((crypto) => ({ id: crypto.id }));
@@ -88,9 +47,6 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
     notFound();
   }
 
-  const mockSeries = createMockSeries(crypto);
-  const mockLabels = createMockLabels(mockSeries.length);
-
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -116,7 +72,7 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
                   priority
                 />
                 <div className="min-w-0">
-                  <h1 className="truncate text-3xl font-bold text-gray-100 sm:text-4xl">{crypto.name}</h1>
+                  <h1 className="truncate text-3xl font-bold text-foreground sm:text-4xl">{crypto.name}</h1>
                   <p className="mt-1 text-sm font-medium uppercase tracking-wider text-gray-400">
                     {crypto.symbol}
                   </p>
@@ -131,14 +87,14 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
               <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
                 <dt className="text-xs uppercase tracking-wider text-gray-500">Market Cap</dt>
-                <dd className="mt-2 text-xl font-semibold text-gray-100">
+                <dd className="mt-2 text-xl font-semibold text-foreground">
                   {compactCurrencyFormatter.format(crypto.marketCap)}
                 </dd>
               </div>
 
               <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
                 <dt className="text-xs uppercase tracking-wider text-gray-500">24h Volume</dt>
-                <dd className="mt-2 text-xl font-semibold text-gray-100">
+                <dd className="mt-2 text-xl font-semibold text-foreground">
                   {compactCurrencyFormatter.format(crypto.volume24h)}
                 </dd>
               </div>
@@ -156,7 +112,12 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
           </div>
 
           <div className="min-w-0 xl:mt-8">
-            <PriceChart values={mockSeries} labels={mockLabels} symbol={crypto.symbol} />
+            <ChartSection
+              cryptoId={crypto.id}
+              symbol={crypto.symbol}
+              price={crypto.price}
+              change24h={crypto.change24h}
+            />
           </div>
         </div>
       </section>
