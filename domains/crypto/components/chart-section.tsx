@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import CryptoDetailWatchlistToggle from "@/domains/crypto/components/crypto-detail-watchlist-toggle";
 import PriceChart from "./price-chart";
 import type { TimeRange, ChartType } from "@/domains/crypto/types/crypto.types";
 import { TIME_RANGES, RANGE_LABELS } from "./chart-config";
@@ -31,6 +32,10 @@ export default function ChartSection({ cryptoId, symbol, price, change24h }: Cha
 
   return (
     <div>
+      <div className="mb-3 flex justify-end">
+        <CryptoDetailWatchlistToggle cryptoId={cryptoId} />
+      </div>
+
       {/* ── Controls row ── */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         {/* Time-range selector */}

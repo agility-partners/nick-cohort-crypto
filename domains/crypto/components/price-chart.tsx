@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import type { OHLCDataPoint } from "@/domains/crypto/types/crypto.types";
 import ChartGrid from "./chart-grid";
@@ -61,33 +61,34 @@ export default function PriceChart({
     candleStep,
     scaleY,
   );
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      const svg = svgRef.current;
-      if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const svgX = ((e.clientX - rect.left) / rect.width) * width;
 
-      if (isCandlestick && ohlcData) {
-        const idx = Math.floor((svgX - padding) / candleStep);
-        setActiveIndex(Math.max(0, Math.min(ohlcData.length - 1, idx)));
-      } else {
-        let closest = 0;
-        let closestDist = Infinity;
-        for (let i = 0; i < points.length; i++) {
-          const dist = Math.abs(points[i].x - svgX);
-          if (dist < closestDist) {
-            closestDist = dist;
-            closest = i;
-          }
-        }
-        setActiveIndex(closest);
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * width;
+
+    if (isCandlestick && ohlcData) {
+      const idx = Math.floor((svgX - padding) / candleStep);
+      setActiveIndex(Math.max(0, Math.min(ohlcData.length - 1, idx)));
+      return;
+    }
+
+    let closest = 0;
+    let closestDist = Infinity;
+
+    for (let i = 0; i < points.length; i++) {
+      const dist = Math.abs(points[i].x - svgX);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = i;
       }
-    },
-    [points, width, isCandlestick, ohlcData, candleStep],
-  );
+    }
 
-  const handleMouseLeave = useCallback(() => setActiveIndex(null), []);
+    setActiveIndex(closest);
+  };
+
+  const handleMouseLeave = () => setActiveIndex(null);
 
   const subtitle = timeRangeLabel
     ? `${timeRangeLabel} · ${symbol}/USD`

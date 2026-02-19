@@ -1,6 +1,6 @@
 # State Management
 
-All state is local to the owning component. No global state library is used. State is lifted only to the nearest common parent when siblings need shared data.
+State is owned by the nearest component that needs it. CoinSight uses local component state plus a small domain provider for watchlist persistence; no external global-state library is used.
 
 ---
 
@@ -8,7 +8,9 @@ All state is local to the owning component. No global state library is used. Sta
 
 | Owner | State | Scope |
 | ----- | ----- | ----- |
-| `HomeContent` | `sortKey`, `sortDirection` | Derived from active view, user-adjustable via `SortControls` |
+| `WatchlistProvider` | `watchlistIds` | Domain-level watchlist selection, shared across routes and persisted to localStorage |
+| `HomeContent` | `sortOrder` (`asc`/`desc`) | User-adjustable on market views; watchlist ignores this and stays alphabetical |
+| `WatchlistAddContent` | `selectedIds`, `formError`, `isPending` | Form selection, validation feedback, and submit transition state |
 | `CryptoLogo` | `imgError` | Local UI fallback |
 | `ChartSection` | `timeRange`, `chartType` | Time-range selector (1D–ALL) and line/candlestick toggle |
 | `PriceChart` | `activeIndex` | Hover tooltip tracking |
@@ -16,26 +18,27 @@ All state is local to the owning component. No global state library is used. Sta
 
 ---
 
-## Home Page — View & Sort Flow
+## Home Page — View & Order Flow
 
 1. `app/page.tsx` renders `HomeContent` inside `<Suspense>` — the route file contains zero logic.
-2. `HomeContent` reads `?view=` from the URL (defaults to `"all"`).
-3. `getDefaultSort(view)` determines the natural sort key and direction per view:
-   - `all` → `marketCap` desc
-   - `gainers` → `change24h` desc
-   - `losers` → `change24h` asc
-   - `volume` → `volume24h` desc
-4. A `useEffect` resets sort state whenever the view changes.
-5. `sortCryptos()` produces a sorted copy via `useMemo` — base sort is ascending; descending reverses.
-6. The sorted array flows: `Watchlist` → `CryptoGrid` → `CryptoCard`.
-
-### User changes sort key or direction
-
-`SortControls` emits via callbacks → `HomeContent` state updates → `useMemo` recomputes → grid re-renders.
+2. `HomeContent` reads `?view=` and resolves a default view:
+   - `watchlist` when watchlist has data
+   - `all` when watchlist is empty
+3. Tab visibility is data-aware: `watchlist` tab is hidden until at least one coin has been added.
+4. Ordering rules:
+   - `watchlist` → always alphabetical by coin name
+   - `all`, `gainers`, `volume` → high/low toggle controls direction
+5. Final list flows through `Watchlist` → `CryptoGrid` → `CryptoCard`.
 
 ### User clicks a Navbar tab
 
-`next/link` navigates to `/?view=<view>` → URL change triggers `HomeContent` to re-read params → `useEffect` resets sort → grid re-renders with new ordering.
+`next/link` navigates to `/?view=<view>` → URL change triggers `HomeContent` to re-read params → list recalculates and grid re-renders.
+
+### User adds coins to watchlist
+
+`HomeContent` → `Add to watchlist` link → `app/watchlist/add/page.tsx` → form submit updates `WatchlistProvider` → route transitions back to `/?view=watchlist`.
+
+The provider de-duplicates IDs and persists them in localStorage for refresh-safe continuity.
 
 ---
 
@@ -53,3 +56,4 @@ All state is local to the owning component. No global state library is used. Sta
 - Keep state as close to where it's used as possible.
 - Derive values with `useMemo` instead of storing computed data in state.
 - Lift state up only when sibling components need to share it.
+- Add explicit validation/loading/error states for form-based interactions.

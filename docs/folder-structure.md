@@ -10,17 +10,25 @@ The codebase follows a **domain-based folder architecture** with strict separati
 app/                          ← Routing only (thin wrappers)
   layout.tsx                  ← Root shell: ThemeProvider, Header, Navbar
   page.tsx                    ← Home route → Suspense → HomeContent
+  watchlist/add/
+    page.tsx                  ← Add-to-watchlist route wrapper
+    loading.tsx               ← Route-level loading skeleton
+    error.tsx                 ← Route-level error boundary UI
   crypto/[id]/
     page.tsx                  ← Detail route (server component, static params)
     not-found.tsx             ← 404 fallback for unknown coin IDs
 
 domains/crypto/               ← Feature domain
-  types/crypto.types.ts       ← All domain model types (Crypto, SortKey, TimeRange, etc.)
+  hooks/
+    use-watchlist.tsx         ← Watchlist state provider + hook (localStorage persistence)
+  types/
+    crypto.types.ts           ← Core domain model types (Crypto, TimeRange, ChartType, etc.)
+    watchlist.types.ts        ← Watchlist provider interfaces
   constants.ts                ← Named constants (view modes, chart dims, PRNG params)
   mock/cryptos.mock.ts        ← Static mock data + getCryptoById() helper
   components/
-    home-content.tsx           ← Smart component: view/sort state, data flow
-    sort-controls.tsx          ← Presentational: sort key + direction controls
+    home-content.tsx           ← Smart component: view/order state, data flow
+    watchlist-add-content.tsx  ← Add-form UI with validation/loading/error states
     watchlist.tsx              ← Presentational: section wrapper for grid
     crypto-grid.tsx            ← Presentational: responsive card grid
     crypto-card.tsx            ← Presentational: single coin card
@@ -39,7 +47,7 @@ shared/                       ← Cross-cutting reusable components
   components/
     header.tsx                 ← Brand logo, market snapshot chips, theme toggle
     stat-chip.tsx              ← Reusable stat badge (extracted from Header)
-    navbar.tsx                 ← View-mode tab navigation
+    navbar.tsx                 ← View-mode tab navigation (watchlist tab is data-aware)
     theme-provider.tsx         ← next-themes wrapper
     theme-toggle.tsx           ← Dark/light toggle button
     coin-sight-logo.tsx        ← SVG brand logo

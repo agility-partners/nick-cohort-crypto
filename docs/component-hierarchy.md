@@ -33,12 +33,25 @@ RootLayout
 ```
 Home → Suspense
   → HomeContent                 (domains/crypto/components/home-content.tsx)
-      → SortControls            (sort key dropdown + direction toggle)
+    → Header actions
+      → Sort order toggle   (market views only)
+      → Add to watchlist link
       → Watchlist
           → CryptoGrid
               → CryptoCard × N
                   → CryptoLogo  (next/image + fallback)
                   → PriceDisplay
+```
+
+## Add Watchlist Page (`app/watchlist/add/page.tsx`)
+
+```
+AddToWatchlistPage
+  → WatchlistAddContent
+    → Multi-select coin list (checkbox grid)
+    → Inline validation/error text
+    → Submit button (pending state)
+    → Cancel link
 ```
 
 ---

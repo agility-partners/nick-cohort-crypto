@@ -14,11 +14,6 @@ export interface Crypto {
   allTimeLow: number; // New field
 }
 
-/* ── Sorting ── */
-
-export type SortKey = "name" | "price" | "change24h" | "marketCap" | "volume24h";
-export type SortDirection = "asc" | "desc";
-
 /* ── Chart ── */
 
 export type TimeRange = "1D" | "7D" | "30D" | "90D" | "1Y" | "ALL";

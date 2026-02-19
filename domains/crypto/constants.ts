@@ -1,6 +1,7 @@
 /* ── View modes ── */
 
 export const VIEW_MODE = {
+  WATCHLIST: "watchlist",
   ALL: "all",
   GAINERS: "gainers",
   LOSERS: "losers",
@@ -9,7 +10,18 @@ export const VIEW_MODE = {
 
 export type ViewMode = (typeof VIEW_MODE)[keyof typeof VIEW_MODE];
 
+export const DEFAULT_VIEW = VIEW_MODE.WATCHLIST;
+
+export function isViewMode(value: string | null): value is ViewMode {
+  if (!value) {
+    return false;
+  }
+
+  return Object.values(VIEW_MODE).includes(value as ViewMode);
+}
+
 export const VIEW_META: Record<ViewMode, { title: string }> = {
+  [VIEW_MODE.WATCHLIST]: { title: "Watchlist" },
   [VIEW_MODE.ALL]: { title: "Market Cap" },
   [VIEW_MODE.GAINERS]: { title: "Top Gainers" },
   [VIEW_MODE.LOSERS]: { title: "Top Losers" },
@@ -19,11 +31,24 @@ export const VIEW_META: Record<ViewMode, { title: string }> = {
 /* ── Nav items ── */
 
 export const NAV_ITEMS = [
-  { label: "Market Cap", view: VIEW_MODE.ALL, href: "/" },
+  { label: "Watchlist", view: VIEW_MODE.WATCHLIST, href: "/" },
+  { label: "Market Cap", view: VIEW_MODE.ALL, href: "/?view=all" },
   { label: "Top Gainers", view: VIEW_MODE.GAINERS, href: "/?view=gainers" },
-  { label: "Top Losers", view: VIEW_MODE.LOSERS, href: "/?view=losers" },
   { label: "Highest Volume", view: VIEW_MODE.VOLUME, href: "/?view=volume" },
 ] as const;
+
+export const ADD_WATCHLIST_HREF = "/watchlist/add";
+export const WATCHLIST_STORAGE_KEY = "coinsight.watchlist";
+
+export const WATCHLIST_STATUS_TEXT = {
+  ADDED: "Added to watchlist",
+  ADD: "Add to watchlist",
+} as const;
+
+export const WATCHLIST_TOGGLE_ARIA_LABEL = {
+  ADD: "Add coin to watchlist",
+  REMOVE: "Remove coin from watchlist",
+} as const;
 
 /* ── Chart dimensions ── */
 

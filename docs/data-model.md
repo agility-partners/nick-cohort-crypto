@@ -14,13 +14,21 @@ All data originates from the static `mockCryptos` array in `domains/crypto/mock/
 
 ## Type System
 
-All domain types live in `domains/crypto/types/crypto.types.ts`.
+Domain types live in `domains/crypto/types/`.
 
 - `interface` is used for object shapes and component props.
 - `type` is used for unions, intersections, and aliases.
 - No `any` is used anywhere in the codebase.
 
-Key types include: `Crypto`, `SortKey`, `SortDirection`, `TimeRange`, `ChartType`, `ViewMode`, and various component prop interfaces.
+Key types include: `Crypto`, `TimeRange`, `ChartType`, `OHLCDataPoint`, `ViewMode`, and watchlist provider interfaces.
+
+---
+
+## Watchlist Persistence Model
+
+- `use-watchlist.tsx` stores selected coin IDs (`string[]`) as the watchlist source of truth.
+- The list is persisted to localStorage under `WATCHLIST_STORAGE_KEY`.
+- Duplicate IDs are filtered during updates to keep the dataset stable.
 
 ---
 

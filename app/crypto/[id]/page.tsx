@@ -140,7 +140,7 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
             </dl>
           </div>
 
-          <div className="min-w-0 xl:mt-8">
+          <div className="min-w-0">
             <ChartSection
               cryptoId={crypto.id}
               symbol={crypto.symbol}

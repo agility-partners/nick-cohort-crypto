@@ -38,6 +38,28 @@ npm run build
 npm run start
 ```
 
+## End-to-end tests (Playwright)
+
+Run the Playwright suite:
+
+```bash
+npm run test:e2e
+```
+
+Additional modes:
+
+```bash
+npm run test:e2e:headed
+npm run test:e2e:ui
+npm run test:e2e:debug
+```
+
+After running, open the HTML report:
+
+```bash
+npx playwright show-report
+```
+
 ## Project shape
 
 - `app/`: route files only (`page.tsx`, `layout.tsx`, route-level `not-found.tsx`)
