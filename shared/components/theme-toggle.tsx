@@ -16,9 +16,9 @@ export default function ThemeToggle() {
     return (
       <button
         aria-label="Toggle theme"
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-xl transition-colors"
+        className="flex h-12 w-12 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-xl transition-colors"
       >
-        <span className="h-4 w-4" />
+        <span className="h-6 w-6" />
       </button>
     );
   }
@@ -30,14 +30,14 @@ export default function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--text-secondary)] backdrop-blur-xl transition-colors duration-200 hover:border-[var(--card-hover-border)] hover:text-[var(--accent)]"
+      className="flex h-12 w-12 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-[var(--text-secondary)] backdrop-blur-xl transition-colors duration-200 hover:border-[var(--card-hover-border)] hover:text-[var(--accent)]"
     >
       {isDark ? (
         /* Sun icon */
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width="24"
+          height="24"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -59,8 +59,8 @@ export default function ThemeToggle() {
         /* Moon icon */
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width="24"
+          height="24"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
