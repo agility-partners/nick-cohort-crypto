@@ -163,6 +163,45 @@ body {
   }
 }
 
+@keyframes watchlist-star-select {
+  0% {
+    transform: scale(0.9) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.25) rotate(-8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes watchlist-star-unselect {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.82);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-watchlist-star-select {
+  animation: watchlist-star-select 180ms ease-out;
+}
+
+.animate-watchlist-star-unselect {
+  animation: watchlist-star-unselect 160ms ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-watchlist-star-select,
+  .animate-watchlist-star-unselect {
+    animation: none;
+  }
+}
+
 .bg-blobs {
   position: fixed;
   inset: 0;

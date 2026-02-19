@@ -83,5 +83,6 @@ npx playwright show-report
 - `docs/chart-system.md`
 - `docs/data-model.md`
 - `docs/theming.md`
+- `docs/playwright-testing.md`
 - `docs/decisions.md`
 - `docs/roadmap.md`

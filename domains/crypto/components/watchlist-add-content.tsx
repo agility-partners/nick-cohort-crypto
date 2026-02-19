@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,15 +13,24 @@ const WATCHLIST_ROUTE = `/?view=${VIEW_MODE.WATCHLIST}`;
 
 export default function WatchlistAddContent() {
   const router = useRouter();
-  const { addManyToWatchlist } = useWatchlist();
+  const { addManyToWatchlist, watchlistIds } = useWatchlist();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const sortedCryptos = useMemo(
-    () => [...mockCryptos].sort((a, b) => b.marketCap - a.marketCap),
-    [],
+  const availableCryptos = useMemo(
+    () =>
+      [...mockCryptos]
+        .filter((crypto) => !watchlistIds.includes(crypto.id))
+        .sort((a, b) => b.marketCap - a.marketCap),
+    [watchlistIds],
   );
+
+  useEffect(() => {
+    const availableIds = new Set(availableCryptos.map((crypto) => crypto.id));
+
+    setSelectedIds((currentIds) => currentIds.filter((id) => availableIds.has(id)));
+  }, [availableCryptos]);
 
   const toggleSelectedId = (cryptoId: string) => {
     setFormError(null);
@@ -71,43 +80,49 @@ export default function WatchlistAddContent() {
       <form onSubmit={handleSubmit} noValidate>
         <fieldset disabled={isPending}>
           <legend className="sr-only">Crypto selections</legend>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {sortedCryptos.map((crypto) => {
-              const isChecked = selectedIds.includes(crypto.id);
+          {availableCryptos.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {availableCryptos.map((crypto) => {
+                const isChecked = selectedIds.includes(crypto.id);
 
-              return (
-                <label
-                  key={crypto.id}
-                  htmlFor={`crypto-option-${crypto.id}`}
-                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${
-                    isChecked
-                      ? "border-green-500/40 bg-green-500/[0.08]"
-                      : "border-[var(--card-border)] bg-[var(--header-bg)]"
-                  }`}
-                >
-                  <input
-                    id={`crypto-option-${crypto.id}`}
-                    type="checkbox"
-                    checked={isChecked}
-                    disabled={isPending}
-                    onChange={() => toggleSelectedId(crypto.id)}
-                    className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--card-bg)] text-green-500 focus:ring-green-500/30"
-                  />
-                  <Image
-                    src={crypto.image}
-                    alt={`${crypto.name} logo`}
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-[var(--text-primary)]">{crypto.name}</p>
-                    <p className="text-xs text-[var(--text-muted)]">{crypto.symbol}</p>
-                  </div>
-                </label>
-              );
-            })}
-          </div>
+                return (
+                  <label
+                    key={crypto.id}
+                    htmlFor={`crypto-option-${crypto.id}`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${
+                      isChecked
+                        ? "border-green-500/40 bg-green-500/[0.08]"
+                        : "border-[var(--card-border)] bg-[var(--header-bg)]"
+                    }`}
+                  >
+                    <input
+                      id={`crypto-option-${crypto.id}`}
+                      type="checkbox"
+                      checked={isChecked}
+                      disabled={isPending}
+                      onChange={() => toggleSelectedId(crypto.id)}
+                      className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--card-bg)] text-green-500 focus:ring-green-500/30"
+                    />
+                    <Image
+                      src={crypto.image}
+                      alt={`${crypto.name} logo`}
+                      width={28}
+                      height={28}
+                      className="rounded-full"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[var(--text-primary)]">{crypto.name}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{crypto.symbol}</p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="rounded-xl border border-[var(--card-border)] bg-[var(--header-bg)] p-4 text-sm text-[var(--text-muted)]">
+              All available coins are already in your watchlist.
+            </p>
+          )}
         </fieldset>
 
         <div className="mt-4 min-h-5" aria-live="polite">

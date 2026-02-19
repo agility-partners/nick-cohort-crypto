@@ -41,4 +41,27 @@ test.describe("Crypto detail page", () => {
       await expect(page.getByRole("link", { name: "Return to watchlist" })).toBeVisible();
     });
   });
+
+  test("updates chart subtitle for every supported range", async ({ page }) => {
+    const ranges = [
+      { button: "1D", subtitle: "Mock 1 day trend · BTC/USD" },
+      { button: "7D", subtitle: "Mock 7 day trend · BTC/USD" },
+      { button: "30D", subtitle: "Mock 30 day trend · BTC/USD" },
+      { button: "90D", subtitle: "Mock 90 day trend · BTC/USD" },
+      { button: "1Y", subtitle: "Mock 1 year trend · BTC/USD" },
+      { button: "ALL", subtitle: "Mock All time trend · BTC/USD" },
+    ] as const;
+
+    await test.step("Open Bitcoin detail page", async () => {
+      await page.goto("/crypto/bitcoin");
+      await expect(page.getByRole("heading", { level: 1, name: "Bitcoin" })).toBeVisible();
+    });
+
+    await test.step("Cycle every range and verify subtitle text", async () => {
+      for (const range of ranges) {
+        await page.getByRole("button", { name: range.button, exact: true }).click();
+        await expect(page.getByText(range.subtitle, { exact: true })).toBeVisible();
+      }
+    });
+  });
 });

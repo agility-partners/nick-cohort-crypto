@@ -29,6 +29,7 @@ No external charting, state management, or data-fetching libraries are used.
 | [state-management.md](state-management.md) | State ownership, sort/view lifecycle |
 | [chart-system.md](chart-system.md) | Chart architecture, data generation, SVG layers, interactions |
 | [theming.md](theming.md) | Theme toggle flow, CSS custom properties, hydration safety |
+| [playwright-testing.md](playwright-testing.md) | E2E setup, commands, suite coverage, logging, and debugging workflow |
 | [data-model.md](data-model.md) | Mock data structure, types, image fallback |
 | [decisions.md](decisions.md) | Key architectural decisions |
 | [roadmap.md](roadmap.md) | Known gaps and evolution path |

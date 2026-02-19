@@ -37,4 +37,23 @@ test.describe("Home navigation", () => {
       await expect(page.getByRole("button", { name: "Low to high" })).toBeVisible();
     });
   });
+
+  test("falls back to Market Cap when watchlist view is requested without saved watchlist", async ({ page }) => {
+    await test.step("Open home with watchlist query and verify safe fallback", async () => {
+      await page.goto("/?view=watchlist");
+
+      await expect(page.getByRole("heading", { level: 2, name: "Market Cap" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Watchlist", exact: true })).toHaveCount(0);
+    });
+  });
+
+  test("falls back to Market Cap when an invalid view query is provided", async ({ page }) => {
+    await test.step("Open home with invalid query and verify default heading", async () => {
+      await page.goto("/?view=invalid-view");
+
+      await expect(page.getByRole("heading", { level: 2, name: "Market Cap" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Top Gainers", exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Highest Volume", exact: true })).toBeVisible();
+    });
+  });
 });
