@@ -15,37 +15,37 @@ export const RANGE_CONFIG: Record<
   "1D": {
     points: 24,
     durationMs: MS_PER_DAY,
-    labelFormat: { hour: "numeric", minute: "2-digit" },
+    labelFormat: { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" },
     volatility: 0.005,
   },
   "7D": {
     points: 36,
     durationMs: 7 * MS_PER_DAY,
-    labelFormat: { month: "short", day: "numeric", hour: "numeric" },
+    labelFormat: { month: "short", day: "numeric", year: "numeric", hour: "numeric" },
     volatility: 0.01,
   },
   "30D": {
     points: 30,
     durationMs: 30 * MS_PER_DAY,
-    labelFormat: { month: "short", day: "numeric" },
+    labelFormat: { month: "short", day: "numeric", year: "numeric" },
     volatility: 0.02,
   },
   "90D": {
     points: 45,
     durationMs: 90 * MS_PER_DAY,
-    labelFormat: { month: "short", day: "numeric" },
+    labelFormat: { month: "short", day: "numeric", year: "numeric" },
     volatility: 0.03,
   },
   "1Y": {
     points: 52,
     durationMs: MS_PER_YEAR,
-    labelFormat: { month: "short", year: "2-digit" },
+    labelFormat: { month: "short", day: "numeric", year: "numeric" },
     volatility: 0.04,
   },
   ALL: {
     points: 60,
     durationMs: 5 * MS_PER_YEAR,
-    labelFormat: { month: "short", year: "2-digit" },
+    labelFormat: { month: "short", day: "numeric", year: "numeric" },
     volatility: 0.05,
   },
 };
