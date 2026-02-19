@@ -10,9 +10,9 @@ test.describe("State resilience", () => {
       await expect(page.getByRole("link", { name: "Watchlist", exact: true })).toHaveCount(0);
     });
 
-    await test.step("Add Bitcoin to watchlist", async () => {
+    await test.step("Add first available coin to watchlist", async () => {
       await page.goto("/watchlist/add");
-      await page.getByLabel(/Bitcoin/i).check();
+      await page.locator('input[type="checkbox"]').first().check();
       await page.getByRole("button", { name: "Add selected" }).click();
     });
 

@@ -29,7 +29,6 @@ Primary config lives in `playwright.config.ts`:
   - screenshot: only on failure
   - video: retained on failure
 - Projects:
-  - `chromium` (Playwright Chromium)
   - `chrome` (installed Google Chrome channel)
 
 ---
@@ -38,18 +37,16 @@ Primary config lives in `playwright.config.ts`:
 
 From repo root:
 
-- Run all projects: `npm run test:e2e`
-- Run headed mode: `npm run test:e2e:headed`
-- Run Chrome only: `npm run test:e2e:chrome`
-- Run Chrome headed: `npm run test:e2e:chrome:headed`
-- Interactive UI: `npm run test:e2e:ui`
-- Debug mode: `npm run test:e2e:debug`
+- Run default suite (Chrome): `npm run test:e2e`
+- Run headed mode (Chrome): `npm run test:e2e:headed`
+- Interactive UI (Chrome): `npm run test:e2e:ui`
+- Debug mode (Chrome): `npm run test:e2e:debug`
 - Show last HTML report: `npx playwright show-report`
 
 Useful focused run examples:
 
-- `npm run test:e2e:chrome -- e2e/watchlist-flow.spec.ts`
-- `npm run test:e2e:chrome -- -g "theme selection"`
+- `npm run test:e2e -- e2e/watchlist-flow.spec.ts`
+- `npm run test:e2e -- -g "theme selection"`
 
 ---
 
@@ -146,7 +143,7 @@ When a test fails:
 
 Quick commands:
 
-- `npm run test:e2e:chrome -- e2e/<spec>.spec.ts --headed`
+- `npm run test:e2e -- e2e/<spec>.spec.ts --headed`
 - `npm run test:e2e:debug -- -g "<test name>"`
 - `npx playwright show-report`
 

@@ -8,12 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:chrome": "playwright test --project=chrome",
-    "test:e2e:chrome:headed": "playwright test --project=chrome --headed",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e": "playwright test --project=chrome",
+    "test:e2e:headed": "playwright test --project=chrome --headed",
+    "test:e2e:ui": "playwright test --project=chrome --ui",
+    "test:e2e:debug": "playwright test --project=chrome --debug"
   },
   "dependencies": {
     "next": "16.1.6",
