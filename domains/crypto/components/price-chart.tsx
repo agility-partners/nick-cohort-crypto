@@ -42,6 +42,14 @@ export default function PriceChart({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const isCandlestick = chartType === "candlestick" && ohlcData && ohlcData.length > 0;
+  const hasEnoughLineData = values.length >= 2;
+  const isLineDowntrend =
+    !isCandlestick && hasEnoughLineData && values[values.length - 1] < values[0];
+  const chartToneClass = isCandlestick
+    ? "text-[var(--accent)]"
+    : isLineDowntrend
+      ? "text-[var(--negative)]"
+      : "text-[var(--positive)]";
 
   const { high, low, priceRange } = getHighLow(!!isCandlestick, values, ohlcData);
   const { points, polylinePoints, areaPath } = computeLineGeometry(values, geo, !!isCandlestick);
@@ -114,7 +122,7 @@ export default function PriceChart({
       <svg
         ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
-        className="h-64 w-full cursor-crosshair text-[var(--accent)]"
+        className={`h-64 w-full cursor-crosshair ${chartToneClass}`}
         role="img"
         aria-label={`${symbol} price chart`}
         onMouseMove={handleMouseMove}
