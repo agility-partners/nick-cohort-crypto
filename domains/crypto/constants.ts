@@ -44,7 +44,7 @@ export const DEFAULT_ALL_COINS_SORT = ALL_COINS_SORT.MARKET_CAP;
 
 export const NAV_ITEMS = [
   { label: "All Coins", view: VIEW_MODE.ALL, href: "/?view=all" },
-  { label: "Watchlist", view: VIEW_MODE.WATCHLIST, href: "/" },
+  { label: "Watchlist", view: VIEW_MODE.WATCHLIST, href: "/?view=watchlist" },
   { label: "Compare", view: VIEW_MODE.COMPARE, href: "/?view=compare" },
 ] as const;
 
