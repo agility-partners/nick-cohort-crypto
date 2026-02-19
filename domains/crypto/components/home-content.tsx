@@ -6,38 +6,46 @@ import { useSearchParams } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
 import Watchlist from "./watchlist";
+import CompareMode from "./compare-mode";
 import type { Crypto } from "@/domains/crypto/types/crypto.types";
 import { useWatchlist } from "@/domains/crypto/hooks/use-watchlist";
 import { mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
 import {
+  ALL_COINS_SORT,
+  ALL_COINS_SORT_OPTIONS,
   ADD_WATCHLIST_HREF,
   DEFAULT_VIEW,
+  DEFAULT_ALL_COINS_SORT,
   isViewMode,
   VIEW_META,
   VIEW_MODE,
-  type ViewMode,
+  type AllCoinsSort,
 } from "@/domains/crypto/constants";
 
 type SortOrder = "desc" | "asc";
 
-const SORT_ORDER_LABEL: Record<SortOrder, string> = {
-  desc: "High to low",
-  asc: "Low to high",
+const SORT_ORDER_ICON: Record<SortOrder, string> = {
+  desc: "↓",
+  asc: "↑",
+};
+
+const SORT_ORDER_ARIA_LABEL: Record<SortOrder, string> = {
+  desc: "Sort order descending",
+  asc: "Sort order ascending",
 };
 
 const SEARCH_PLACEHOLDER = "Search coins";
 
-function sortByViewAndOrder(cryptos: Crypto[], view: ViewMode, order: SortOrder): Crypto[] {
+function sortByAllCoinsAndOrder(
+  cryptos: Crypto[],
+  sortBy: AllCoinsSort,
+  order: SortOrder,
+): Crypto[] {
   const sorted = [...cryptos];
 
-  if (view === VIEW_MODE.WATCHLIST) {
-    sorted.sort((a, b) => a.name.localeCompare(b.name));
-    return sorted;
-  }
-
-  if (view === VIEW_MODE.ALL) {
+  if (sortBy === ALL_COINS_SORT.MARKET_CAP) {
     sorted.sort((a, b) => a.marketCap - b.marketCap);
-  } else if (view === VIEW_MODE.GAINERS || view === VIEW_MODE.LOSERS) {
+  } else if (sortBy === ALL_COINS_SORT.TOP_GAINERS) {
     sorted.sort((a, b) => a.change24h - b.change24h);
   } else {
     sorted.sort((a, b) => a.volume24h - b.volume24h);
@@ -46,12 +54,12 @@ function sortByViewAndOrder(cryptos: Crypto[], view: ViewMode, order: SortOrder)
   return order === "desc" ? sorted.reverse() : sorted;
 }
 
-function getMarketCryptos(view: ViewMode, order: SortOrder): Crypto[] {
-  if (view === VIEW_MODE.WATCHLIST) {
-    return [];
-  }
+function sortWatchlistByName(cryptos: Crypto[]): Crypto[] {
+  return [...cryptos].sort((a, b) => a.name.localeCompare(b.name));
+}
 
-  return sortByViewAndOrder(mockCryptos, view, order);
+function getAllCoinsCryptos(sortBy: AllCoinsSort, order: SortOrder): Crypto[] {
+  return sortByAllCoinsAndOrder(mockCryptos, sortBy, order);
 }
 
 function filterCryptos(cryptos: Crypto[], query: string): Crypto[] {
@@ -86,6 +94,7 @@ export default function HomeContent() {
   const resolvedView = isViewMode(requestedView) ? requestedView : defaultView;
   const view = !hasWatchlist && resolvedView === VIEW_MODE.WATCHLIST ? VIEW_MODE.ALL : resolvedView;
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [allCoinsSortBy, setAllCoinsSortBy] = useState<AllCoinsSort>(DEFAULT_ALL_COINS_SORT);
   const [searchQuery, setSearchQuery] = useState("");
 
   const cryptoById = useMemo(
@@ -103,8 +112,8 @@ export default function HomeContent() {
 
   const orderedCryptos =
     view === VIEW_MODE.WATCHLIST
-      ? sortByViewAndOrder(watchlistCryptos, view, sortOrder)
-      : getMarketCryptos(view, sortOrder);
+      ? sortWatchlistByName(watchlistCryptos)
+      : getAllCoinsCryptos(allCoinsSortBy, sortOrder);
 
   const displayedCryptos = useMemo(
     () => filterCryptos(orderedCryptos, searchQuery),
@@ -137,15 +146,35 @@ export default function HomeContent() {
           />
 
           {view !== VIEW_MODE.WATCHLIST && (
-            <button
-              type="button"
-              onClick={() =>
-                setSortOrder((currentOrder) => (currentOrder === "desc" ? "asc" : "desc"))
-              }
-              className="inline-flex items-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] backdrop-blur-xl transition-colors hover:border-[var(--card-hover-border)] hover:text-[var(--accent)]"
-            >
-              {SORT_ORDER_LABEL[sortOrder]}
-            </button>
+            <>
+              <label htmlFor="all-coins-sort" className="sr-only">
+                Sort all coins by
+              </label>
+              <select
+                id="all-coins-sort"
+                value={allCoinsSortBy}
+                onChange={(event) => setAllCoinsSortBy(event.target.value as AllCoinsSort)}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur-xl outline-none transition-colors hover:border-[var(--card-hover-border)] focus:border-green-500/40 focus:ring-1 focus:ring-green-500/20"
+              >
+                {ALL_COINS_SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSortOrder((currentOrder) => (currentOrder === "desc" ? "asc" : "desc"))
+                }
+                aria-label={SORT_ORDER_ARIA_LABEL[sortOrder]}
+                title={SORT_ORDER_ARIA_LABEL[sortOrder]}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] text-lg font-medium text-[var(--text-primary)] backdrop-blur-xl transition-colors hover:border-[var(--card-hover-border)] hover:text-[var(--accent)]"
+              >
+                <span aria-hidden>{SORT_ORDER_ICON[sortOrder]}</span>
+              </button>
+            </>
           )}
 
           <Link
@@ -157,7 +186,11 @@ export default function HomeContent() {
         </div>
       </div>
 
-      <Watchlist cryptos={displayedCryptos} />
+      {view === VIEW_MODE.COMPARE && (
+        <CompareMode allCryptos={mockCryptos} availableCryptos={displayedCryptos} />
+      )}
+
+      {view !== VIEW_MODE.COMPARE && <Watchlist cryptos={displayedCryptos} />}
     </>
   );
 }

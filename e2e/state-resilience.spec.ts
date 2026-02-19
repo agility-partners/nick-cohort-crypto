@@ -35,7 +35,7 @@ test.describe("State resilience", () => {
     await test.step("Open home and verify app renders fallback safely", async () => {
       await page.goto("/");
 
-      await expect(page.getByRole("heading", { level: 2, name: "Market Cap" })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 2, name: "All Coins" })).toBeVisible();
       await expect(page.getByRole("link", { name: "Watchlist", exact: true })).toHaveCount(0);
       await expect(page.getByText("Runtime SyntaxError")).toHaveCount(0);
     });
