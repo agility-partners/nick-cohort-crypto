@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
+import { useMemo, useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,11 +10,13 @@ import { useWatchlist } from "@/domains/crypto/hooks/use-watchlist";
 import { mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
 
 const WATCHLIST_ROUTE = `/?view=${VIEW_MODE.WATCHLIST}`;
+const SEARCH_PLACEHOLDER = "Search coins";
 
 export default function WatchlistAddContent() {
   const router = useRouter();
   const { addManyToWatchlist, watchlistIds } = useWatchlist();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -26,11 +28,28 @@ export default function WatchlistAddContent() {
     [watchlistIds],
   );
 
-  useEffect(() => {
+  const filteredCryptos = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return availableCryptos;
+    }
+
+    return availableCryptos.filter((crypto) => {
+      const normalizedName = crypto.name.toLowerCase();
+      const normalizedSymbol = crypto.symbol.toLowerCase();
+
+      return (
+        normalizedName.includes(normalizedQuery) || normalizedSymbol.includes(normalizedQuery)
+      );
+    });
+  }, [availableCryptos, searchQuery]);
+
+  const selectedAvailableIds = useMemo(() => {
     const availableIds = new Set(availableCryptos.map((crypto) => crypto.id));
 
-    setSelectedIds((currentIds) => currentIds.filter((id) => availableIds.has(id)));
-  }, [availableCryptos]);
+    return selectedIds.filter((id) => availableIds.has(id));
+  }, [availableCryptos, selectedIds]);
 
   const toggleSelectedId = (cryptoId: string) => {
     setFormError(null);
@@ -47,13 +66,13 @@ export default function WatchlistAddContent() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (selectedIds.length === 0) {
+    if (selectedAvailableIds.length === 0) {
       setFormError("Select at least one cryptocurrency before submitting.");
       return;
     }
 
     try {
-      addManyToWatchlist(selectedIds);
+      addManyToWatchlist(selectedAvailableIds);
       setFormError(null);
       startTransition(() => {
         router.push(WATCHLIST_ROUTE);
@@ -72,18 +91,39 @@ export default function WatchlistAddContent() {
             Select one or more coins from the market and add them to your watchlist.
           </p>
         </div>
-        <span className="rounded-full bg-[var(--badge-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
-          {selectedIds.length} selected
-        </span>
+        <div className="flex items-center gap-2">
+          <label htmlFor="watchlist-search" className="sr-only">
+            Search coins
+          </label>
+          <input
+            id="watchlist-search"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder={SEARCH_PLACEHOLDER}
+            className="w-44 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm backdrop-blur-xl outline-none transition-colors placeholder:text-[var(--text-muted)] hover:border-[var(--card-hover-border)] focus:border-green-500/40 focus:ring-1 focus:ring-green-500/20"
+          />
+          <span className="rounded-full bg-[var(--badge-bg)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
+            {selectedAvailableIds.length} selected
+          </span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
         <fieldset disabled={isPending}>
           <legend className="sr-only">Crypto selections</legend>
-          {availableCryptos.length > 0 ? (
+          {availableCryptos.length === 0 ? (
+            <p className="rounded-xl border border-[var(--card-border)] bg-[var(--header-bg)] p-4 text-sm text-[var(--text-muted)]">
+              All available coins are already in your watchlist.
+            </p>
+          ) : filteredCryptos.length === 0 ? (
+            <p className="rounded-xl border border-[var(--card-border)] bg-[var(--header-bg)] p-4 text-sm text-[var(--text-muted)]">
+              No coins match your search.
+            </p>
+          ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {availableCryptos.map((crypto) => {
-                const isChecked = selectedIds.includes(crypto.id);
+              {filteredCryptos.map((crypto) => {
+                const isChecked = selectedAvailableIds.includes(crypto.id);
 
                 return (
                   <label
@@ -118,10 +158,6 @@ export default function WatchlistAddContent() {
                 );
               })}
             </div>
-          ) : (
-            <p className="rounded-xl border border-[var(--card-border)] bg-[var(--header-bg)] p-4 text-sm text-[var(--text-muted)]">
-              All available coins are already in your watchlist.
-            </p>
           )}
         </fieldset>
 
@@ -142,7 +178,7 @@ export default function WatchlistAddContent() {
           </Link>
           <button
             type="submit"
-            disabled={selectedIds.length === 0 || isPending}
+            disabled={selectedAvailableIds.length === 0 || isPending}
             className="inline-flex items-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-black transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isPending ? "Saving..." : "Add selected"}
