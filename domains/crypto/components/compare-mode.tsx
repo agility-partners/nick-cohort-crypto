@@ -33,10 +33,15 @@ export default function CompareMode({ allCryptos, availableCryptos }: CompareMod
 
   const series = useMemo(
     () =>
-      selectedCryptos.map((crypto) => ({
-        crypto,
-        values: generateMockData(crypto.id, crypto.price, crypto.change24h, timeRange).values,
-      })),
+      selectedCryptos.map((crypto) => {
+        const chartData = generateMockData(crypto.id, crypto.price, crypto.change24h, timeRange);
+
+        return {
+          crypto,
+          values: chartData.values,
+          labels: chartData.labels,
+        };
+      }),
     [selectedCryptos, timeRange],
   );
 

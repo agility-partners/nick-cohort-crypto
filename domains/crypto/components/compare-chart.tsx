@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef, useState } from "react";
+
 import type { Crypto } from "@/domains/crypto/types/crypto.types";
 import type { TimeRange } from "@/domains/crypto/types/crypto.types";
 import { TIME_RANGES } from "@/domains/crypto/components/chart-config";
@@ -7,6 +9,7 @@ import { TIME_RANGES } from "@/domains/crypto/components/chart-config";
 interface CompareSeries {
   crypto: Crypto;
   values: number[];
+  labels: string[];
 }
 
 interface CompareChartProps {
@@ -30,12 +33,19 @@ function createPath(points: number[][]): string {
     .join(" ");
 }
 
+function formatIndexValue(value: number): string {
+  return `${value.toFixed(2)}`;
+}
+
 export default function CompareChart({
   series,
   timeRange,
   timeRangeLabel,
   onTimeRangeChange,
 }: CompareChartProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   if (series.length < 2) {
     return (
       <section className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card-bg)] p-8 text-center">
@@ -58,6 +68,36 @@ export default function CompareChart({
   const minValue = Math.min(...allValues);
   const maxValue = Math.max(...allValues);
   const range = Math.max(maxValue - minValue, 1);
+  const pointCount = Math.max(maxPoints - 1, 1);
+  const activeX =
+    activeIndex === null ? null : padding + ((width - padding * 2) * activeIndex) / pointCount;
+  const activeLabel = activeIndex === null ? null : (series[0]?.labels[activeIndex] ?? null);
+
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    const svg = svgRef.current;
+    if (!svg) {
+      return;
+    }
+
+    const ctm = svg.getScreenCTM();
+    if (!ctm) {
+      return;
+    }
+
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const localPoint = point.matrixTransform(ctm.inverse());
+
+    const clampedX = Math.min(width - padding, Math.max(padding, localPoint.x));
+    const ratio = (clampedX - padding) / (width - padding * 2);
+    const nextIndex = Math.round(ratio * pointCount);
+    setActiveIndex(Math.max(0, Math.min(maxPoints - 1, nextIndex)));
+  };
+
+  const handleMouseLeave = () => {
+    setActiveIndex(null);
+  };
 
   return (
     <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4">
@@ -87,47 +127,132 @@ export default function CompareChart({
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-64 w-full">
-        <line
-          x1={padding}
-          y1={height - padding}
-          x2={width - padding}
-          y2={height - padding}
-          stroke="var(--grid-line)"
-          strokeWidth="1"
-        />
-        <line
-          x1={padding}
-          y1={padding}
-          x2={padding}
-          y2={height - padding}
-          stroke="var(--grid-line)"
-          strokeWidth="1"
-        />
-
-        {normalizedSeries.map((entry, seriesIndex) => {
-          const points = entry.values.map((value, valueIndex) => {
-            const x =
-              padding + ((width - padding * 2) * valueIndex) / Math.max(maxPoints - 1, 1);
-            const y =
-              height -
-              padding -
-              ((value - minValue) / range) * (height - padding * 2);
-
-            return [x, y];
-          });
-
-          return (
-            <path
-              key={entry.crypto.id}
-              d={createPath(points)}
-              fill="none"
-              stroke={SERIES_COLORS[seriesIndex]}
-              strokeWidth={2}
+      <div className="flex flex-col gap-3 lg:flex-row">
+        <div className="min-w-0 flex-1">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${width} ${height}`}
+            className="h-64 w-full cursor-crosshair"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
+            <line
+              x1={padding}
+              y1={height - padding}
+              x2={width - padding}
+              y2={height - padding}
+              stroke="var(--grid-line)"
+              strokeWidth="1"
             />
-          );
-        })}
-      </svg>
+            <line
+              x1={padding}
+              y1={padding}
+              x2={padding}
+              y2={height - padding}
+              stroke="var(--grid-line)"
+              strokeWidth="1"
+            />
+
+            {normalizedSeries.map((entry, seriesIndex) => {
+              const points = entry.values.map((value, valueIndex) => {
+                const x =
+                  padding + ((width - padding * 2) * valueIndex) / Math.max(maxPoints - 1, 1);
+                const y =
+                  height -
+                  padding -
+                  ((value - minValue) / range) * (height - padding * 2);
+
+                return [x, y];
+              });
+
+              return (
+                <path
+                  key={entry.crypto.id}
+                  d={createPath(points)}
+                  fill="none"
+                  stroke={SERIES_COLORS[seriesIndex]}
+                  strokeWidth={2}
+                />
+              );
+            })}
+
+            {activeX !== null && (
+              <line
+                x1={activeX}
+                y1={padding}
+                x2={activeX}
+                y2={height - padding}
+                stroke="var(--crosshair)"
+                strokeWidth="1"
+                strokeDasharray="3 3"
+              />
+            )}
+
+            {activeIndex !== null &&
+              normalizedSeries.map((entry, seriesIndex) => {
+                const activeValue = entry.values[activeIndex] ?? entry.values[entry.values.length - 1];
+                const y =
+                  height -
+                  padding -
+                  ((activeValue - minValue) / range) * (height - padding * 2);
+
+                return (
+                  <circle
+                    key={`${entry.crypto.id}-point`}
+                    cx={activeX ?? 0}
+                    cy={y}
+                    r={3}
+                    fill={SERIES_COLORS[seriesIndex]}
+                    stroke="var(--card-bg)"
+                    strokeWidth="1.5"
+                  />
+                );
+              })}
+          </svg>
+        </div>
+
+        <aside className="h-64 w-full rounded-lg border border-[var(--card-border)] bg-[var(--badge-bg)] p-3 lg:w-52">
+          <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+            {activeLabel ?? "Hover chart"}
+          </p>
+
+          {activeIndex === null ? (
+            <div className="flex h-[calc(100%-1.5rem)] items-center justify-center text-center">
+              <p className="text-xs text-[var(--text-muted)]">
+                Drag across the chart to see values
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {normalizedSeries.map((entry, index) => {
+                const value = entry.values[activeIndex] ?? entry.values[entry.values.length - 1];
+
+                return (
+                  <div
+                    key={`${entry.crypto.id}-hover`}
+                    className="rounded-md border border-[var(--card-border)] px-2 py-1.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: SERIES_COLORS[index] }}
+                        />
+                        <span className="text-xs font-medium text-[var(--text-secondary)]">
+                          {entry.crypto.symbol}
+                        </span>
+                      </div>
+                      <span className="text-xs font-semibold" style={{ color: SERIES_COLORS[index] }}>
+                        {formatIndexValue(value)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </aside>
+      </div>
 
       <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {normalizedSeries.map((entry, index) => {
