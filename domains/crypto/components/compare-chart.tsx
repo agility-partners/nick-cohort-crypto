@@ -19,7 +19,7 @@ interface CompareChartProps {
   onTimeRangeChange: (timeRange: TimeRange) => void;
 }
 
-const SERIES_COLORS = ["#22c55e", "#3b82f6", "#a855f7"];
+const SERIES_COLORS = ["#22c55e", "#2b7cfd", "#a340ff"];
 
 function normalizeSeries(values: number[]): number[] {
   const baseValue = values[0] ?? 1;
