@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import type { Crypto, TimeRange } from "@/domains/crypto/types/crypto.types";
 import { RANGE_LABELS } from "@/domains/crypto/components/chart-config";
@@ -8,6 +9,7 @@ import { useCompareList } from "@/domains/crypto/hooks/use-compare-list";
 import CompareChart from "@/domains/crypto/components/compare-chart";
 import CompareSelector from "@/domains/crypto/components/compare-selector";
 import { generateMockData } from "@/domains/crypto/components/generate-mock-chart-data";
+import { COMPARE_PRESELECT_QUERY_KEY } from "@/domains/crypto/constants";
 
 interface CompareModeProps {
   allCryptos: Crypto[];
@@ -15,8 +17,24 @@ interface CompareModeProps {
 }
 
 export default function CompareMode({ allCryptos, availableCryptos }: CompareModeProps) {
+  const searchParams = useSearchParams();
   const [timeRange, setTimeRange] = useState<TimeRange>("7D");
-  const { compareIds, isAtLimit, toggleCompare, clearCompare } = useCompareList();
+  const { compareIds, isAtLimit, setSingleCompare, toggleCompare, clearCompare } = useCompareList();
+  const preselectedCoinId = searchParams.get(COMPARE_PRESELECT_QUERY_KEY);
+
+  useEffect(() => {
+    if (!preselectedCoinId) {
+      return;
+    }
+
+    const isValidCrypto = allCryptos.some((crypto) => crypto.id === preselectedCoinId);
+
+    if (!isValidCrypto) {
+      return;
+    }
+
+    setSingleCompare(preselectedCoinId);
+  }, [allCryptos, preselectedCoinId, setSingleCompare]);
 
   const cryptoById = useMemo(
     () => new Map<string, Crypto>(allCryptos.map((crypto) => [crypto.id, crypto])),

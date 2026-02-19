@@ -56,6 +56,30 @@ export function useCompareList(): CompareListHookValue {
     [compareIds],
   );
 
+  const addCompare = useCallback((cryptoId: string) => {
+    setCompareIds((currentIds) => {
+      if (currentIds.includes(cryptoId)) {
+        return currentIds;
+      }
+
+      if (currentIds.length >= MAX_COMPARE_ASSETS) {
+        return currentIds;
+      }
+
+      return [...currentIds, cryptoId];
+    });
+  }, []);
+
+  const setSingleCompare = useCallback((cryptoId: string) => {
+    setCompareIds((currentIds) => {
+      if (currentIds.length === 1 && currentIds[0] === cryptoId) {
+        return currentIds;
+      }
+
+      return [cryptoId];
+    });
+  }, []);
+
   const toggleCompare = useCallback((cryptoId: string) => {
     setCompareIds((currentIds) => {
       if (currentIds.includes(cryptoId)) {
@@ -80,9 +104,11 @@ export function useCompareList(): CompareListHookValue {
       isHydrated,
       isSelected,
       isAtLimit: compareIds.length >= MAX_COMPARE_ASSETS,
+      setSingleCompare,
+      addCompare,
       toggleCompare,
       clearCompare,
     }),
-    [clearCompare, compareIds, isHydrated, isSelected, toggleCompare],
+    [addCompare, clearCompare, compareIds, isHydrated, isSelected, setSingleCompare, toggleCompare],
   );
 }

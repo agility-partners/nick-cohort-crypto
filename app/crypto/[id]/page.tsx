@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import ChartSection from "@/domains/crypto/components/chart-section";
 import PriceDisplay from "@/domains/crypto/components/price-display";
+import { COMPARE_PRESELECT_QUERY_KEY, COMPARE_VIEW_HREF } from "@/domains/crypto/constants";
 import { getCryptoById, mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
 
 interface CryptoDetailPageProps {
@@ -147,6 +148,14 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
               price={crypto.price}
               change24h={crypto.change24h}
             />
+            <div className="mt-4">
+              <Link
+                href={`${COMPARE_VIEW_HREF}&${COMPARE_PRESELECT_QUERY_KEY}=${crypto.id}`}
+                className="inline-flex items-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] backdrop-blur-xl transition-colors hover:border-[var(--card-hover-border)] hover:text-[var(--accent)]"
+              >
+                Compare with another coin
+              </Link>
+            </div>
           </div>
         </div>
       </section>

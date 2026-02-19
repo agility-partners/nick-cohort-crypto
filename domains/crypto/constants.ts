@@ -49,6 +49,8 @@ export const NAV_ITEMS = [
 ] as const;
 
 export const ADD_WATCHLIST_HREF = "/watchlist/add";
+export const COMPARE_VIEW_HREF = "/?view=compare";
+export const COMPARE_PRESELECT_QUERY_KEY = "coin";
 export const WATCHLIST_STORAGE_KEY = "coinsight.watchlist";
 export const COMPARE_STORAGE_KEY = "coinsight.compare";
 export const MAX_COMPARE_ASSETS = 3;
