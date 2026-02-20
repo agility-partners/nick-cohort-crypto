@@ -1,5 +1,4 @@
 using CryptoApi.DTOs;
-using CryptoApi.Models;
 
 namespace CryptoApi.Services;
 
@@ -9,9 +8,9 @@ public interface ICoinService
 
     Task<CoinDto?> GetCoinById(string id);
 
-    Task<IReadOnlyList<WatchlistItem>> GetWatchlist();
+    Task<IReadOnlyList<CoinDto>> GetWatchlist();
 
-    Task<WatchlistItem> AddToWatchlist(string coinId);
+    Task<AddToWatchlistResult?> AddToWatchlist(string coinId);
 
-    Task RemoveFromWatchlist(string coinId);
+    Task<bool> RemoveFromWatchlist(string coinId);
 }

@@ -25,14 +25,30 @@ public class WatchlistController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddToWatchlist([FromBody] AddWatchlistRequest request)
     {
-        var addedItem = await _coinService.AddToWatchlist(request.CoinId);
-        return Ok(addedItem);
+        var result = await _coinService.AddToWatchlist(request.CoinId);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        if (result.IsConflict)
+        {
+            return Conflict(result);
+        }
+
+        return Ok(result);
     }
 
     [HttpDelete("{coinId}")]
     public async Task<IActionResult> RemoveFromWatchlist(string coinId)
     {
-        await _coinService.RemoveFromWatchlist(coinId);
+        var removed = await _coinService.RemoveFromWatchlist(coinId);
+        if (!removed)
+        {
+            return NotFound();
+        }
+
         return NoContent();
     }
 }
