@@ -1,3 +1,4 @@
+using CryptoApi.DTOs;
 using CryptoApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,14 +16,14 @@ public class CoinsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllCoins()
+    public async Task<ActionResult<IReadOnlyList<CoinDto>>> GetAllCoins()
     {
         var coins = await _coinService.GetAllCoins();
         return Ok(coins);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetCoinById(string id)
+    public async Task<ActionResult<CoinDto>> GetCoinById(string id)
     {
         var coin = await _coinService.GetCoinById(id);
         if (coin is null)

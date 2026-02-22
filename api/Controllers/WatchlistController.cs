@@ -16,14 +16,14 @@ public class WatchlistController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetWatchlist()
+    public async Task<ActionResult<IReadOnlyList<CoinDto>>> GetWatchlist()
     {
         var watchlist = await _coinService.GetWatchlist();
         return Ok(watchlist);
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddToWatchlist([FromBody] AddWatchlistRequest request)
+    public async Task<ActionResult<CoinDto>> AddToWatchlist([FromBody] AddWatchlistRequest request)
     {
         var result = await _coinService.AddToWatchlist(request.CoinId);
 
@@ -34,14 +34,18 @@ public class WatchlistController : ControllerBase
 
         if (result.IsConflict)
         {
-            return Conflict(result);
+            return Conflict(result.Coin);
         }
 
-        return Ok(result);
+        return CreatedAtAction(
+            actionName: nameof(CoinsController.GetCoinById),
+            controllerName: "Coins",
+            routeValues: new { id = result.Coin!.Id },
+            value: result.Coin);
     }
 
     [HttpDelete("{coinId}")]
-    public async Task<IActionResult> RemoveFromWatchlist(string coinId)
+    public async Task<ActionResult> RemoveFromWatchlist(string coinId)
     {
         var removed = await _coinService.RemoveFromWatchlist(coinId);
         if (!removed)

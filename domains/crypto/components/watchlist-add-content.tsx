@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useMemo, useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { VIEW_MODE } from "@/domains/crypto/constants";
 import { useWatchlist } from "@/domains/crypto/hooks/use-watchlist";
-import { mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
+import { fetchAllCoins } from "@/domains/crypto/services/crypto-api";
+import type { Crypto } from "@/domains/crypto/types/crypto.types";
 
 const WATCHLIST_ROUTE = `/?view=${VIEW_MODE.WATCHLIST}`;
 const SEARCH_PLACEHOLDER = "Search coins";
@@ -15,17 +16,35 @@ const SEARCH_PLACEHOLDER = "Search coins";
 export default function WatchlistAddContent() {
   const router = useRouter();
   const { addManyToWatchlist, watchlistIds } = useWatchlist();
+  const [allCryptos, setAllCryptos] = useState<Crypto[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCryptos() {
+      const coins = await fetchAllCoins();
+      if (isMounted) {
+        setAllCryptos(coins);
+      }
+    }
+
+    void loadCryptos();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const availableCryptos = useMemo(
     () =>
-      [...mockCryptos]
+      [...allCryptos]
         .filter((crypto) => !watchlistIds.includes(crypto.id))
         .sort((a, b) => b.marketCap - a.marketCap),
-    [watchlistIds],
+    [allCryptos, watchlistIds],
   );
 
   const filteredCryptos = useMemo(() => {
@@ -63,7 +82,7 @@ export default function WatchlistAddContent() {
     });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (selectedAvailableIds.length === 0) {
@@ -72,7 +91,7 @@ export default function WatchlistAddContent() {
     }
 
     try {
-      addManyToWatchlist(selectedAvailableIds);
+      await addManyToWatchlist(selectedAvailableIds);
       setFormError(null);
       startTransition(() => {
         router.push(WATCHLIST_ROUTE);

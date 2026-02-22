@@ -11,7 +11,8 @@
     "test:e2e": "playwright test --project=chrome",
     "test:e2e:headed": "playwright test --project=chrome --headed",
     "test:e2e:ui": "playwright test --project=chrome --ui",
-    "test:e2e:debug": "playwright test --project=chrome --debug"
+    "test:e2e:debug": "playwright test --project=chrome --debug",
+    "test:fullstack": "node scripts/full-stack-smoke.mjs"
   },
   "dependencies": {
     "next": "16.1.6",

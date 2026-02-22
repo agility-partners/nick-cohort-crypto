@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSyncExternalStore } from "react";
@@ -9,7 +9,7 @@ import Watchlist from "./watchlist";
 import CompareMode from "./compare-mode";
 import type { Crypto } from "@/domains/crypto/types/crypto.types";
 import { useWatchlist } from "@/domains/crypto/hooks/use-watchlist";
-import { mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
+import { fetchAllCoins } from "@/domains/crypto/services/crypto-api";
 import {
   ALL_COINS_SORT,
   ALL_COINS_SORT_OPTIONS,
@@ -58,8 +58,8 @@ function sortWatchlistByName(cryptos: Crypto[]): Crypto[] {
   return [...cryptos].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-function getAllCoinsCryptos(sortBy: AllCoinsSort, order: SortOrder): Crypto[] {
-  return sortByAllCoinsAndOrder(mockCryptos, sortBy, order);
+function getAllCoinsCryptos(cryptos: Crypto[], sortBy: AllCoinsSort, order: SortOrder): Crypto[] {
+  return sortByAllCoinsAndOrder(cryptos, sortBy, order);
 }
 
 function filterCryptos(cryptos: Crypto[], query: string): Crypto[] {
@@ -96,10 +96,28 @@ export default function HomeContent() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [allCoinsSortBy, setAllCoinsSortBy] = useState<AllCoinsSort>(DEFAULT_ALL_COINS_SORT);
   const [searchQuery, setSearchQuery] = useState("");
+  const [allCryptos, setAllCryptos] = useState<Crypto[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCryptos() {
+      const coins = await fetchAllCoins();
+      if (isMounted) {
+        setAllCryptos(coins);
+      }
+    }
+
+    void loadCryptos();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const cryptoById = useMemo(
-    () => new Map<string, Crypto>(mockCryptos.map((crypto) => [crypto.id, crypto])),
-    [],
+    () => new Map<string, Crypto>(allCryptos.map((crypto) => [crypto.id, crypto])),
+    [allCryptos],
   );
 
   const watchlistCryptos = useMemo(
@@ -113,7 +131,7 @@ export default function HomeContent() {
   const orderedCryptos =
     view === VIEW_MODE.WATCHLIST
       ? sortWatchlistByName(watchlistCryptos)
-      : getAllCoinsCryptos(allCoinsSortBy, sortOrder);
+      : getAllCoinsCryptos(allCryptos, allCoinsSortBy, sortOrder);
 
   const displayedCryptos = useMemo(
     () => filterCryptos(orderedCryptos, searchQuery),
@@ -187,7 +205,7 @@ export default function HomeContent() {
       </div>
 
       {view === VIEW_MODE.COMPARE && (
-        <CompareMode allCryptos={mockCryptos} availableCryptos={displayedCryptos} />
+        <CompareMode allCryptos={allCryptos} availableCryptos={displayedCryptos} />
       )}
 
       {view !== VIEW_MODE.COMPARE && <Watchlist cryptos={displayedCryptos} />}

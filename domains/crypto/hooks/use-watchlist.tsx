@@ -2,7 +2,11 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { WATCHLIST_STORAGE_KEY } from "@/domains/crypto/constants";
+import {
+  addToWatchlist as addToWatchlistRequest,
+  fetchWatchlist,
+  removeFromWatchlist as removeFromWatchlistRequest,
+} from "@/domains/crypto/services/crypto-api";
 import type {
   WatchlistContextValue,
   WatchlistProviderProps,
@@ -10,94 +14,77 @@ import type {
 
 const WatchlistContext = createContext<WatchlistContextValue | undefined>(undefined);
 
-function sanitizeWatchlistIds(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  const uniqueIds: string[] = [];
-
-  value.forEach((entry) => {
-    if (typeof entry === "string" && !uniqueIds.includes(entry)) {
-      uniqueIds.push(entry);
-    }
-  });
-
-  return uniqueIds;
-}
-
 export function WatchlistProvider({ children }: WatchlistProviderProps) {
   const [watchlistIds, setWatchlistIds] = useState<string[]>([]);
-  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const storedValue = window.localStorage.getItem(WATCHLIST_STORAGE_KEY);
+    let isMounted = true;
 
-    if (!storedValue) {
-      setIsHydrated(true);
-      return;
+    async function loadWatchlist() {
+      const watchlistCoins = await fetchWatchlist();
+      if (!isMounted) {
+        return;
+      }
+
+      setWatchlistIds(watchlistCoins.map((coin) => coin.id));
     }
 
-    try {
-      const parsedValue = JSON.parse(storedValue) as unknown;
-      setWatchlistIds(sanitizeWatchlistIds(parsedValue));
-    } catch {
-      setWatchlistIds([]);
-    } finally {
-      setIsHydrated(true);
-    }
+    void loadWatchlist();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-  useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-
-    window.localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(watchlistIds));
-  }, [isHydrated, watchlistIds]);
 
   const isInWatchlist = useCallback(
     (cryptoId: string) => watchlistIds.includes(cryptoId),
     [watchlistIds],
   );
 
-  const addToWatchlist = useCallback((cryptoId: string) => {
+  const addToWatchlist = useCallback(async (cryptoId: string) => {
+    const result = await addToWatchlistRequest(cryptoId);
+    if (!result || result === "not-found" || !result.coin) {
+      return;
+    }
+
+    const addedCoinId = result.coin.id;
+
     setWatchlistIds((currentIds) => {
-      if (currentIds.includes(cryptoId)) {
+      if (currentIds.includes(addedCoinId)) {
         return currentIds;
       }
 
-      return [...currentIds, cryptoId];
+      return [...currentIds, addedCoinId];
     });
   }, []);
 
-  const removeFromWatchlist = useCallback((cryptoId: string) => {
+  const removeFromWatchlist = useCallback(async (cryptoId: string) => {
+    const removed = await removeFromWatchlistRequest(cryptoId);
+    if (!removed) {
+      return;
+    }
+
     setWatchlistIds((currentIds) => currentIds.filter((currentId) => currentId !== cryptoId));
   }, []);
 
-  const toggleWatchlist = useCallback((cryptoId: string) => {
-    setWatchlistIds((currentIds) => {
-      if (currentIds.includes(cryptoId)) {
-        return currentIds.filter((currentId) => currentId !== cryptoId);
+  const toggleWatchlist = useCallback(
+    async (cryptoId: string) => {
+      if (watchlistIds.includes(cryptoId)) {
+        await removeFromWatchlist(cryptoId);
+        return;
       }
 
-      return [...currentIds, cryptoId];
-    });
-  }, []);
+      await addToWatchlist(cryptoId);
+    },
+    [addToWatchlist, removeFromWatchlist, watchlistIds],
+  );
 
-  const addManyToWatchlist = useCallback((cryptoIds: string[]) => {
-    setWatchlistIds((currentIds) => {
-      const nextIds = [...currentIds];
-
-      cryptoIds.forEach((cryptoId) => {
-        if (!nextIds.includes(cryptoId)) {
-          nextIds.push(cryptoId);
-        }
-      });
-
-      return nextIds;
-    });
-  }, []);
+  const addManyToWatchlist = useCallback(
+    async (cryptoIds: string[]) => {
+      await Promise.all(cryptoIds.map((cryptoId) => addToWatchlist(cryptoId)));
+    },
+    [addToWatchlist],
+  );
 
   const value = useMemo(
     () => ({

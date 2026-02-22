@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import ChartSection from "@/domains/crypto/components/chart-section";
 import PriceDisplay from "@/domains/crypto/components/price-display";
 import { COMPARE_PRESELECT_QUERY_KEY, COMPARE_VIEW_HREF } from "@/domains/crypto/constants";
-import { getCryptoById, mockCryptos } from "@/domains/crypto/mock/cryptos.mock";
+import { fetchCoinById } from "@/domains/crypto/services/crypto-api";
 
 interface CryptoDetailPageProps {
   params: Promise<{ id: string }>;
@@ -19,13 +19,11 @@ const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
-export function generateStaticParams() {
-  return mockCryptos.map((crypto) => ({ id: crypto.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: CryptoDetailPageProps): Promise<Metadata> {
   const { id } = await params;
-  const crypto = getCryptoById(id);
+  const crypto = await fetchCoinById(id);
 
   if (!crypto) {
     return {
@@ -42,7 +40,7 @@ export async function generateMetadata({ params }: CryptoDetailPageProps): Promi
 
 export default async function CryptoDetailPage({ params }: CryptoDetailPageProps) {
   const { id } = await params;
-  const crypto = getCryptoById(id);
+  const crypto = await fetchCoinById(id);
 
   if (!crypto) {
     notFound();
