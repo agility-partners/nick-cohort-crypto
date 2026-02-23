@@ -36,6 +36,9 @@ Key decisions made in CoinSight and the reasoning behind them.
 | **RESTful route naming** | Nouns, plural: `/api/coins`, `/api/watchlist`. No verbs in routes. |
 | **Centralized error handling** | Custom `ErrorHandlingMiddleware` catches unhandled exceptions and returns consistent JSON with a `requestId` for correlation. In Development, includes exception details; in Production, generic message only. Runs first in the pipeline so it wraps everything downstream. |
 | **Built-in logging only** | Uses ASP.NET Core's `ILogger<T>` — no external packages (Serilog, NLog). `CoinService` logs business operations at Information/Warning level; middleware logs exceptions at Error level. Structured log parameters (e.g., `{CoinId}`) for machine-readable output. |
+| **Integration tests over unit tests** | Tests use `WebApplicationFactory<Program>` to spin up the full API in-memory. This tests the real middleware pipeline, routing, DI, and serialization — catching issues that isolated unit tests would miss. |
+| **Custom test factory for stateful tests** | `CoinSightApiFactory` re-registers `CoinService` as Singleton so watchlist state persists across requests within a single test. Production stays Scoped. Each test creates its own factory for isolation. |
+| **`public partial class Program`** | Top-level statements generate an implicit `Program` class that's `internal` by default. The `partial` declaration makes it `public` so the test project can reference it via `WebApplicationFactory<Program>`. |
 
 ## Docker Decisions
 

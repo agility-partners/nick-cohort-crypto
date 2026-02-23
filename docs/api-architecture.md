@@ -27,7 +27,7 @@ api/
     ErrorHandlingMiddleware.cs ← Catches unhandled exceptions, returns consistent JSON errors
   Services/
     ICoinService.cs          ← Interface defining all business logic methods
-    CoinService.cs           ← In-memory implementation with 23 seeded coins + ILogger
+    CoinService.cs           ← In-memory implementation with 24 seeded coins + ILogger
   Models/
     Coin.cs                  ← Internal domain model (all coin properties)
     WatchlistItem.cs         ← Internal model (Id, CoinId, AddedAt)
@@ -46,7 +46,7 @@ api/
 
 | Method | Route | Success | Failure | Description |
 | --- | --- | --- | --- | --- |
-| GET | `/api/coins` | 200 + `CoinDto[]` | — | List all 23 coins |
+| GET | `/api/coins` | 200 + `CoinDto[]` | — | List all 24 coins |
 | GET | `/api/coins/{id}` | 200 + `CoinDto` | 404 | Get single coin by ID |
 | GET | `/api/watchlist` | 200 + `CoinDto[]` | — | List watchlisted coins |
 | POST | `/api/watchlist` | 201 + `CoinDto` | 400 (validation), 404 (coin not found), 409 (duplicate) | Add coin to watchlist |
@@ -133,7 +133,7 @@ The API uses ASP.NET Core's built-in `ILogger<T>` — no external packages.
 
 | Operation | Level | Example |
 | --- | --- | --- |
-| Fetch all coins | Information | `Fetched all coins. Total: 23` |
+| Fetch all coins | Information | `Fetched all coins. Total: 24` |
 | Retrieve coin by ID | Information | `Retrieved coin: bitcoin` |
 | Coin not found | Warning | `Coin not found: fakecoin` |
 | Add to watchlist | Information | `Coin added to watchlist: bitcoin` |
@@ -152,7 +152,7 @@ Log levels follow ASP.NET Core conventions: `Information` for successful operati
 
 The current implementation uses in-memory data:
 
-- **Coins**: a `static List<Coin>` seeded with 23 cryptocurrencies matching the frontend mock data.
+- **Coins**: a `static List<Coin>` seeded with 24 cryptocurrencies matching the frontend mock data.
 - **Watchlist**: an instance-level `List<WatchlistItem>` that resets per request (scoped lifetime).
 - **Mapping**: a private `MapToCoinDto()` method converts internal `Coin` objects to `CoinDto` responses.
 
@@ -170,3 +170,25 @@ public string CoinId { get; set; } = string.Empty;
 ```
 
 ASP.NET Core automatically returns 400 with validation errors when the `[Required]` constraint is violated. No manual validation code is needed in the controller.
+
+---
+
+## Integration Tests
+
+The `api-tests/` project uses xUnit with `WebApplicationFactory<Program>` to spin up the API in-memory — no network, no Docker required. Tests send real HTTP requests through the full middleware pipeline, making them true integration tests.
+
+**Test project**: `api-tests/CryptoApi.Tests.csproj` references the API project and includes xUnit, `Microsoft.AspNetCore.Mvc.Testing`, and the test SDK.
+
+**Program access**: `Program.cs` includes `public partial class Program { }` so `WebApplicationFactory<Program>` can reference the entry-point class from the test assembly.
+
+**Custom factory**: `CoinSightApiFactory` overrides `ConfigureWebHost` to re-register `ICoinService` as `Singleton` instead of `Scoped`. This is needed because the in-memory watchlist lives on the `CoinService` instance — with `Scoped` lifetime, each HTTP request gets a fresh empty watchlist, which breaks multi-step test flows (add → verify duplicate, add → delete). Each test creates its own factory so tests don't leak state between each other.
+
+**Test coverage** (15 tests total):
+
+| File | Tests | What it covers |
+| --- | --- | --- |
+| `CoinsEndpointTests.cs` | 5 | GET all coins (count, DTO shape), GET by ID (valid, invalid, case-insensitive) |
+| `WatchlistEndpointTests.cs` | 8 | Empty list, add (201 + location header), invalid coin (404), empty body (400), duplicate (409), remove (204), remove not-in-list (404) |
+| `ErrorHandlingTests.cs` | 2 | Unknown route returns 404 (not HTML), invalid JSON body returns 400 as `application/problem+json` |
+
+**Run tests**: `dotnet test` from the `api-tests/` directory (or the project root if a solution file exists).

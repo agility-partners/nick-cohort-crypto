@@ -15,7 +15,7 @@ api/                              ← C# / .NET 8 REST API
     ErrorHandlingMiddleware.cs    ← Catches unhandled exceptions, returns JSON errors
   Services/
     ICoinService.cs               ← Business logic interface
-    CoinService.cs                ← In-memory implementation (23 seeded coins) + ILogger
+    CoinService.cs                ← In-memory implementation (24 seeded coins) + ILogger
   Models/
     Coin.cs                       ← Internal domain model
     WatchlistItem.cs              ← Watchlist entry (Id, CoinId, AddedAt)
@@ -26,6 +26,13 @@ api/                              ← C# / .NET 8 REST API
   Program.cs                      ← DI, CORS, Swagger, middleware pipeline
   Dockerfile                      ← Multi-stage build (SDK → runtime)
   CryptoApi.csproj                ← .NET project file
+
+api-tests/                        ← xUnit integration tests
+  CoinSightApiFactory.cs          ← Custom WebApplicationFactory (Singleton DI for stateful tests)
+  CoinsEndpointTests.cs           ← 5 tests: list all, DTO shape, get by ID, 404, case-insensitive
+  WatchlistEndpointTests.cs       ← 8 tests: empty list, add, location header, 404, 400, 409, delete, delete-not-found
+  ErrorHandlingTests.cs           ← 2 tests: unknown route 404, invalid JSON 400
+  CryptoApi.Tests.csproj          ← Test project (xUnit, Microsoft.AspNetCore.Mvc.Testing)
 
 app/                              ← Routing only (thin wrappers)
   layout.tsx                      ← Root shell: ThemeProvider, Header, Navbar

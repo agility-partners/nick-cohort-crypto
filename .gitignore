@@ -45,6 +45,8 @@ next-env.d.ts
 # .NET build artifacts
 api/bin/
 api/obj/
+api-tests/bin/
+api-tests/obj/
 *.dll
 *.pdb
 *.nuget.*
