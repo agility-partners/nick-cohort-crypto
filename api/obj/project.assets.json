@@ -458,19 +458,19 @@
     ]
   },
   "packageFolders": {
-    "/root/.nuget/packages/": {}
+    "/Users/nicholascamacho/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/src/api/CryptoApi.csproj",
+      "projectUniqueName": "/Users/nicholascamacho/Library/CloudStorage/OneDrive-AgilityPartners/Desktop/nick-cohort-crypto/api/CryptoApi.csproj",
       "projectName": "CryptoApi",
-      "projectPath": "/src/api/CryptoApi.csproj",
-      "packagesPath": "/root/.nuget/packages/",
-      "outputPath": "/src/api/obj/",
+      "projectPath": "/Users/nicholascamacho/Library/CloudStorage/OneDrive-AgilityPartners/Desktop/nick-cohort-crypto/api/CryptoApi.csproj",
+      "packagesPath": "/Users/nicholascamacho/.nuget/packages/",
+      "outputPath": "/Users/nicholascamacho/Library/CloudStorage/OneDrive-AgilityPartners/Desktop/nick-cohort-crypto/api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/root/.nuget/NuGet/NuGet.Config"
+        "/Users/nicholascamacho/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -488,11 +488,6 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -527,7 +522,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.418/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/opt/homebrew/Cellar/dotnet@8/8.0.124/libexec/sdk/8.0.124/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
