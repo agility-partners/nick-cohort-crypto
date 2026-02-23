@@ -23,9 +23,11 @@ api/
   Controllers/
     CoinsController.cs       ← GET /api/coins, GET /api/coins/{id}
     WatchlistController.cs   ← GET /api/watchlist, POST /api/watchlist, DELETE /api/watchlist/{coinId}
+  Middleware/
+    ErrorHandlingMiddleware.cs ← Catches unhandled exceptions, returns consistent JSON errors
   Services/
     ICoinService.cs          ← Interface defining all business logic methods
-    CoinService.cs           ← In-memory implementation with 23 seeded coins
+    CoinService.cs           ← In-memory implementation with 23 seeded coins + ILogger
   Models/
     Coin.cs                  ← Internal domain model (all coin properties)
     WatchlistItem.cs         ← Internal model (Id, CoinId, AddedAt)
@@ -56,15 +58,15 @@ api/
 
 ```
 HTTP Request
-  → Middleware Pipeline (HTTPS redirect → CORS → Routing)
+  → Middleware Pipeline (Error handling → HTTPS redirect → CORS → Routing)
     → Controller (HTTP concerns only: status codes, ActionResult)
       → Service Interface (ICoinService — business logic contract)
-        → Service Implementation (CoinService — data access + mapping)
+        → Service Implementation (CoinService — data access + mapping + logging)
           → Models (internal domain objects)
           → DTOs (external API contracts)
 ```
 
-Controllers never contain business logic. They call the service and translate the result into an HTTP response. Services never know about HTTP — they return domain objects and result types.
+Controllers never contain business logic. They call the service and translate the result into an HTTP response. Services never know about HTTP — they return domain objects and result types. Logging is handled at two levels: the service layer logs business operations, and the error handling middleware logs unhandled exceptions.
 
 ---
 
@@ -97,12 +99,52 @@ In practice, the frontend uses a Next.js rewrite proxy (`/backend-api → API`),
 ## Middleware Pipeline Order
 
 ```csharp
-app.UseHttpsRedirection();        // 1. Redirect HTTP → HTTPS
-app.UseCors(FrontendCorsPolicy);  // 2. Handle CORS preflight before routing
-app.MapControllers();             // 3. Route to controller actions
+app.UseMiddleware<ErrorHandlingMiddleware>(); // 1. Catch unhandled exceptions → JSON error response
+app.UseHttpsRedirection();                    // 2. Redirect HTTP → HTTPS
+app.UseCors(FrontendCorsPolicy);             // 3. Handle CORS preflight before routing
+app.MapControllers();                         // 4. Route to controller actions
 ```
 
-Order matters: CORS must run before routing so that `OPTIONS` preflight requests are answered before they reach controllers (which don't handle `OPTIONS`).
+Order matters: the error handling middleware runs first so it wraps everything downstream — any exception thrown during CORS, routing, or controller execution is caught and converted to a consistent JSON response. CORS must run before routing so that `OPTIONS` preflight requests are answered before they reach controllers.
+
+---
+
+## Error Handling
+
+`ErrorHandlingMiddleware` catches all unhandled exceptions in the pipeline. On error it:
+
+1. Generates a `requestId` (GUID) for correlation
+2. Logs the exception at `Error` level with the request path and ID
+3. Returns a JSON response with status 500:
+   ```json
+   { "error": "An error occurred processing your request.", "requestId": "..." }
+   ```
+4. In Development only: includes a `message` field with exception details
+
+This ensures clients always receive JSON (never HTML stack traces) and that every error is logged with a traceable ID.
+
+---
+
+## Logging
+
+The API uses ASP.NET Core's built-in `ILogger<T>` — no external packages.
+
+**Service layer** (`CoinService`): logs all business operations via `ILogger<CoinService>`:
+
+| Operation | Level | Example |
+| --- | --- | --- |
+| Fetch all coins | Information | `Fetched all coins. Total: 23` |
+| Retrieve coin by ID | Information | `Retrieved coin: bitcoin` |
+| Coin not found | Warning | `Coin not found: fakecoin` |
+| Add to watchlist | Information | `Coin added to watchlist: bitcoin` |
+| Watchlist duplicate | Warning | `Add to watchlist conflict — already exists: bitcoin` |
+| Watchlist coin missing | Warning | `Add to watchlist failed — coin not found: fakecoin` |
+| Remove from watchlist | Information | `Coin removed from watchlist: bitcoin` |
+| Remove not found | Warning | `Remove from watchlist failed — not found: bitcoin` |
+
+**Middleware** (`ErrorHandlingMiddleware`): logs unhandled exceptions at `Error` level with the request path and correlation ID.
+
+Log levels follow ASP.NET Core conventions: `Information` for successful operations, `Warning` for expected business failures (404, 409), `Error` for unhandled exceptions.
 
 ---
 

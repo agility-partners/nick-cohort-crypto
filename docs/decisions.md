@@ -34,6 +34,8 @@ Key decisions made in CoinSight and the reasoning behind them.
 | **Data Annotations for validation** | `[Required]` on `AddWatchlistRequest.CoinId` lets ASP.NET Core return 400 automatically. No manual validation code in controllers. |
 | **Correct HTTP status codes** | 200 (success), 201 with `CreatedAtAction` (created), 204 (deleted), 400 (validation), 404 (not found), 409 (duplicate watchlist entry). |
 | **RESTful route naming** | Nouns, plural: `/api/coins`, `/api/watchlist`. No verbs in routes. |
+| **Centralized error handling** | Custom `ErrorHandlingMiddleware` catches unhandled exceptions and returns consistent JSON with a `requestId` for correlation. In Development, includes exception details; in Production, generic message only. Runs first in the pipeline so it wraps everything downstream. |
+| **Built-in logging only** | Uses ASP.NET Core's `ILogger<T>` — no external packages (Serilog, NLog). `CoinService` logs business operations at Information/Warning level; middleware logs exceptions at Error level. Structured log parameters (e.g., `{CoinId}`) for machine-readable output. |
 
 ## Docker Decisions
 

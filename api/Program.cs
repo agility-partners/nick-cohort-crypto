@@ -1,3 +1,4 @@
+using CryptoApi.Middleware;
 using CryptoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors(FrontendCorsPolicy);
 

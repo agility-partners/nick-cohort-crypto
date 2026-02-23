@@ -5,6 +5,13 @@ namespace CryptoApi.Services;
 
 public class CoinService : ICoinService
 {
+    private readonly ILogger<CoinService> _logger;
+
+    public CoinService(ILogger<CoinService> logger)
+    {
+        _logger = logger;
+    }
+
     private static readonly List<Coin> Coins =
     [
         new()
@@ -350,6 +357,7 @@ public class CoinService : ICoinService
     public Task<IReadOnlyList<CoinDto>> GetAllCoins()
     {
         var result = Coins.Select(MapToCoinDto).ToList();
+        _logger.LogInformation("Fetched all coins. Total: {CoinCount}", result.Count);
         return Task.FromResult<IReadOnlyList<CoinDto>>(result);
     }
 
@@ -358,8 +366,14 @@ public class CoinService : ICoinService
         var coin = Coins.FirstOrDefault(currentCoin =>
             string.Equals(currentCoin.Id, id, StringComparison.OrdinalIgnoreCase));
 
-        var result = coin is null ? null : MapToCoinDto(coin);
-        return Task.FromResult(result);
+        if (coin is null)
+        {
+            _logger.LogWarning("Coin not found: {CoinId}", id);
+            return Task.FromResult<CoinDto?>(null);
+        }
+
+        _logger.LogInformation("Retrieved coin: {CoinId}", id);
+        return Task.FromResult<CoinDto?>(MapToCoinDto(coin));
     }
 
     public Task<IReadOnlyList<CoinDto>> GetWatchlist()
@@ -373,6 +387,7 @@ public class CoinService : ICoinService
             .Select(MapToCoinDto)
             .ToList();
 
+        _logger.LogInformation("Fetched watchlist. Total: {WatchlistCount}", result.Count);
         return Task.FromResult<IReadOnlyList<CoinDto>>(result);
     }
 
@@ -383,6 +398,7 @@ public class CoinService : ICoinService
 
         if (coin is null)
         {
+            _logger.LogWarning("Add to watchlist failed — coin not found: {CoinId}", coinId);
             return Task.FromResult<AddToWatchlistResult?>(null);
         }
 
@@ -391,6 +407,7 @@ public class CoinService : ICoinService
 
         if (existsInWatchlist)
         {
+            _logger.LogWarning("Add to watchlist conflict — already exists: {CoinId}", coinId);
             var conflictResult = new AddToWatchlistResult
             {
                 IsConflict = true,
@@ -407,6 +424,7 @@ public class CoinService : ICoinService
             AddedAt = DateTime.UtcNow,
         });
 
+        _logger.LogInformation("Coin added to watchlist: {CoinId}", coinId);
         var successResult = new AddToWatchlistResult
         {
             IsConflict = false,
@@ -423,10 +441,12 @@ public class CoinService : ICoinService
 
         if (watchlistItem is null)
         {
+            _logger.LogWarning("Remove from watchlist failed — not found: {CoinId}", coinId);
             return Task.FromResult(false);
         }
 
         _watchlist.Remove(watchlistItem);
+        _logger.LogInformation("Coin removed from watchlist: {CoinId}", coinId);
         return Task.FromResult(true);
     }
 

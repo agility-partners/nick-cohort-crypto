@@ -11,9 +11,11 @@ api/                              ← C# / .NET 8 REST API
   Controllers/
     CoinsController.cs            ← GET /api/coins, GET /api/coins/{id}
     WatchlistController.cs        ← GET /api/watchlist, POST /api/watchlist, DELETE /api/watchlist/{coinId}
+  Middleware/
+    ErrorHandlingMiddleware.cs    ← Catches unhandled exceptions, returns JSON errors
   Services/
     ICoinService.cs               ← Business logic interface
-    CoinService.cs                ← In-memory implementation (23 seeded coins)
+    CoinService.cs                ← In-memory implementation (23 seeded coins) + ILogger
   Models/
     Coin.cs                       ← Internal domain model
     WatchlistItem.cs              ← Watchlist entry (Id, CoinId, AddedAt)
@@ -122,6 +124,7 @@ Inside `api/`:
 | Folder | Purpose |
 | --- | --- |
 | `Controllers/` | HTTP layer — routes requests, returns status codes |
-| `Services/` | Business logic — interface + implementation |
+| `Middleware/` | Cross-cutting concerns — error handling |
+| `Services/` | Business logic — interface + implementation + logging |
 | `Models/` | Internal domain objects (not exposed to API consumers) |
 | `DTOs/` | API contracts — request/response shapes |
