@@ -2,6 +2,7 @@ using CryptoApi.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace CryptoApi.Tests;
 
@@ -30,6 +31,12 @@ public class CoinSightApiFactory : WebApplicationFactory<Program>
 
             // Re-register as Singleton so state persists across requests
             services.AddSingleton<ICoinService, CoinService>();
+        });
+
+        // Suppress noisy log output during test runs
+        builder.ConfigureLogging(logging =>
+        {
+            logging.SetMinimumLevel(LogLevel.Error);
         });
     }
 }

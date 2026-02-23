@@ -1,12 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace CryptoApi.Tests;
 
-public class CoinsEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public class CoinsEndpointTests : IClassFixture<CoinSightApiFactory>
 {
     private readonly HttpClient _client;
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -14,7 +13,7 @@ public class CoinsEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         PropertyNameCaseInsensitive = true
     };
 
-    public CoinsEndpointTests(WebApplicationFactory<Program> factory)
+    public CoinsEndpointTests(CoinSightApiFactory factory)
     {
         _client = factory.CreateClient();
     }

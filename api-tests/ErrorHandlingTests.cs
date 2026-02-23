@@ -1,15 +1,14 @@
 using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace CryptoApi.Tests;
 
-public class ErrorHandlingTests : IClassFixture<WebApplicationFactory<Program>>
+public class ErrorHandlingTests : IClassFixture<CoinSightApiFactory>
 {
     private readonly HttpClient _client;
 
-    public ErrorHandlingTests(WebApplicationFactory<Program> factory)
+    public ErrorHandlingTests(CoinSightApiFactory factory)
     {
         _client = factory.CreateClient();
     }
