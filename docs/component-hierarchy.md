@@ -12,7 +12,6 @@ RootLayout
   → Background blobs            (decorative, aria-hidden)
   → Header                      (shared/components/header.tsx)
       → CoinSightLogo
-      → StatChip × 3            (Coins, Total MCap, Avg 24h)
       → ThemeToggle
   → Navbar                      (shared/components/navbar.tsx, Suspense-wrapped)
   → {children}
@@ -20,10 +19,7 @@ RootLayout
 
 ### Shell render details
 
-1. `Header` computes aggregate stats from the static `mockCryptos` array at render time:
-   - Total coins count
-   - Total market cap (compact-formatted)
-   - Average 24h change (color-coded via `StatChip`)
+1. `Header` renders the brand logo and theme toggle. It does not fetch or compute data.
 2. `Navbar` reads `useSearchParams` to highlight the active view tab. Navigation items come from `NAV_ITEMS` in `domains/crypto/constants.ts`.
 
 ---
@@ -59,7 +55,7 @@ AddToWatchlistPage
 ## Detail Page (`app/crypto/[id]/page.tsx`)
 
 ```
-CryptoDetailPage               (server component, generates static params)
+CryptoDetailPage               (server component, force-dynamic, fetches from API)
   → Back link
   → Coin header + PriceDisplay (size="lg")
   → Market metric cards (Market Cap, 24h Volume, 24h Change)

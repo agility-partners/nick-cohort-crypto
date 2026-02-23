@@ -1,18 +1,34 @@
 # Roadmap
 
+## Completed
+
+- API / data-service abstraction layer (.NET 8 REST API with 5 endpoints)
+- Frontend wired to API (crypto-api.ts service layer replaces direct mock imports)
+- Watchlist persistence via API (replaced localStorage-based approach)
+- Docker containerization (multi-stage builds for both services)
+- Docker Compose orchestration (single command to run the full stack)
+- Full-stack smoke test (scripts/full-stack-smoke.mjs — 10 API + 5 browser tests)
+
+---
+
 ## Known Gaps
 
-- No API or data-service abstraction layer
-- No test harness
+- Watchlist state resets between API restarts (in-memory storage, no database)
 - Sort/view state not persisted across sessions (theme is persisted by `next-themes` via localStorage)
 - Chart time-range and type selections reset on navigation
+- No authentication or user-specific watchlists
+- No health check endpoint for Docker readiness probes
+- No CI/CD pipeline
 
 ---
 
 ## Evolution Path
 
-1. Introduce a data gateway with static and API adapters
-2. Add test coverage for sorting, view logic, and rendering
-3. Add runtime data refresh (polling, revalidation, or streaming)
-4. Replace mock price series with real historical data
-5. Persist view/sort preferences in URL params or local storage
+1. Add a database backend (PostgreSQL via Entity Framework Core) to persist watchlist state across API restarts
+2. Add health check endpoint (`/health`) for Docker and orchestrator readiness probes
+3. Add test coverage for API endpoints (xUnit integration tests)
+4. Add runtime data refresh (polling, revalidation, or streaming) for live price updates
+5. Replace mock price series with real historical data (CoinGecko or similar API)
+6. Add authentication to support per-user watchlists
+7. Persist view/sort preferences in URL params or localStorage
+8. Set up CI/CD pipeline (GitHub Actions for lint, test, build, and Docker image push)

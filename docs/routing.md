@@ -1,6 +1,6 @@
 # Routing
 
-Routing is handled by the Next.js App Router via files in `app/`. Route files stay thin and delegate UI/state to domain components.
+Routing is handled by the Next.js App Router via files in `app/`. Route files stay thin and delegate UI/state to domain components. The frontend communicates with the .NET API through a rewrite proxy configured in `next.config.ts`.
 
 ---
 
@@ -12,7 +12,7 @@ Routing is handled by the Next.js App Router via files in `app/`. Route files st
 | `/watchlist/add` | `app/watchlist/add/page.tsx` | Static route | Renders add-to-watchlist form content |
 | `/watchlist/add` loading | `app/watchlist/add/loading.tsx` | Route loading boundary | Skeleton UI while add page is resolving |
 | `/watchlist/add` error | `app/watchlist/add/error.tsx` | Route error boundary | Recovery UI with retry/back actions |
-| `/crypto/[id]` | `app/crypto/[id]/page.tsx` | Dynamic segment | Resolves `id`, renders detail header + `ChartSection` |
+| `/crypto/[id]` | `app/crypto/[id]/page.tsx` | Dynamic segment (`force-dynamic`) | Fetches coin from API, renders detail header + `ChartSection` |
 | `/crypto/[id]` not found | `app/crypto/[id]/not-found.tsx` | Segment 404 UI | Shown when `notFound()` is triggered |
 
 ---
@@ -25,14 +25,32 @@ Routing is handled by the Next.js App Router via files in `app/`. Route files st
 
 ---
 
+## API Proxy Rewrite
+
+`next.config.ts` includes a rewrite rule that proxies API requests from the browser:
+
+```
+/backend-api/:path*  →  ${NEXT_PUBLIC_API_URL}/:path*
+```
+
+This means browser-side fetch calls go to `/backend-api/api/coins` (same origin), and Next.js rewrites them to `http://localhost:5000/api/coins` (or `http://api:5000` in Docker). This avoids CORS issues for client-side requests.
+
+Server-side rendering requests (from Next.js Node.js process) call the API URL directly since they are not subject to browser CORS restrictions.
+
+The `crypto-api.ts` client detects the environment (`typeof window`) and uses the appropriate base URL:
+
+- Browser: `/backend-api`
+- Server: `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:5000`)
+
+---
+
 ## Query-Param Routing on Home
 
 Home sub-views are URL-driven through `?view=` (not separate route files):
 
 - `/?view=watchlist` (only displayed as a tab when populated)
 - `/?view=all`
-- `/?view=gainers`
-- `/?view=volume`
+- `/?view=compare`
 
 `Navbar` links write these query params, and `HomeContent` reads them using `useSearchParams` to resolve title, visibility, and ordering.
 
@@ -47,10 +65,11 @@ Home sub-views are URL-driven through `?view=` (not separate route files):
 
 ## Dynamic Detail Route
 
-1. `generateStaticParams()` returns every known coin id from `mockCryptos`.
-2. Next.js pre-renders `/crypto/<id>` pages at build time for those ids.
-3. On request, the page resolves `params.id` and looks up data with `getCryptoById(id)`.
-4. Missing ids call `notFound()`, which renders the segment-level not-found UI.
+1. `app/crypto/[id]/page.tsx` exports `const dynamic = "force-dynamic"` — pages are rendered on each request, not statically generated.
+2. On request, the page calls `fetchCoinById(id)` from `crypto-api.ts`, which fetches from the .NET API.
+3. Missing IDs return `null` from the API (404), and the page calls `notFound()` to render the segment-level not-found UI.
+
+This replaced the previous `generateStaticParams()` approach, which pre-rendered pages from mock data at build time. With the API backend, pages are rendered dynamically to reflect current API state.
 
 ---
 

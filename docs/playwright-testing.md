@@ -10,7 +10,7 @@ The Playwright suite focuses on:
 
 - Core user journeys (home, detail, watchlist add flow)
 - URL-driven view behavior and fallback logic
-- Persistence and resilience (localStorage + theme)
+- Persistence and resilience (watchlist via API, theme via localStorage)
 - Chart interaction coverage on detail pages
 - Fast triage via step-level logs and Playwright artifacts
 
@@ -59,7 +59,7 @@ Validates home route and query-parameter view behavior:
 - Default home state renders `Market Cap`
 - Watchlist tab is hidden when no saved watchlist exists
 - Top navigation routes update URL and heading (`gainers`, `volume`)
-- Sort-order toggle text updates (`High to low` ↔ `Low to high`)
+- Sort-order toggle text updates (`High to low` / `Low to high`)
 - Query fallback behavior:
   - `/?view=watchlist` with empty watchlist falls back to `Market Cap`
   - invalid `?view` falls back safely to default behavior
@@ -72,7 +72,7 @@ Validates add-to-watchlist user flow:
 - Selecting coins updates selected count and enables submit
 - Submit routes to watchlist view
 - Selected coins render in watchlist
-- Reload preserves watchlist (localStorage persistence behavior)
+- Reload preserves watchlist (API persistence)
 
 ### 3) `e2e/crypto-detail.spec.ts`
 
@@ -101,6 +101,41 @@ Validates stability in state edge cases:
   - switch theme
   - reload
   - selected theme remains active
+
+---
+
+## Full-Stack Smoke Test
+
+In addition to the Playwright spec files, a comprehensive smoke test script lives at `scripts/full-stack-smoke.mjs`. It covers both API and frontend integration in a single run.
+
+### API tests (10 checks)
+
+1. GET /api/coins returns 23 coins
+2. GET /api/coins/bitcoin returns Bitcoin
+3. GET /api/coins/fakecoin returns 404
+4. GET /api/watchlist is empty
+5. POST /api/watchlist with bitcoin returns 201
+6. POST duplicate bitcoin returns 409
+7. POST fake coin returns 404
+8. POST empty payload returns 400
+9. DELETE /api/watchlist/bitcoin returns 204
+10. DELETE same coin again returns 404
+
+### Frontend tests (5 checks)
+
+11. Home page loads with 23 coins from API
+12. Clicking a coin loads detail page from API
+13. Add to watchlist persists via API after refresh
+14. Remove from watchlist persists after refresh
+15. Watchlist tab shows correct coins
+
+### Running the smoke test
+
+```bash
+node scripts/full-stack-smoke.mjs
+```
+
+Requires both the API (port 5000) and frontend (port 3000) to be running.
 
 ---
 
@@ -157,12 +192,14 @@ Current suite is strong on core flows but does not yet include:
 - Keyboard-only accessibility journeys
 - Multi-browser matrix beyond Chromium/Chrome in routine runs
 - CI pipeline enforcement (recommended next)
+- API integration tests (xUnit) independent of the frontend
 
 ---
 
 ## Recommended Next Additions
 
-1. Add GitHub Actions workflow for lint + Playwright
+1. Add GitHub Actions workflow for lint + Playwright + smoke test
 2. Add accessibility-focused keyboard navigation tests
 3. Add baseline visual snapshots for core pages
 4. Add WebKit project for broader browser confidence
+5. Add xUnit integration tests for the .NET API endpoints

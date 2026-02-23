@@ -1,6 +1,6 @@
 # State Management
 
-State is owned by the nearest component that needs it. CoinSight uses local component state plus a small domain provider for watchlist persistence; no external global-state library is used.
+State is owned by the nearest component that needs it. CoinSight uses local component state plus a domain-level provider for watchlist persistence. The watchlist provider is backed by API calls to the .NET backend; no external global-state library is used.
 
 ---
 
@@ -8,8 +8,9 @@ State is owned by the nearest component that needs it. CoinSight uses local comp
 
 | Owner | State | Scope |
 | ----- | ----- | ----- |
-| `WatchlistProvider` | `watchlistIds` | Domain-level watchlist selection, shared across routes and persisted to localStorage |
-| `HomeContent` | `sortOrder` (`asc`/`desc`) | User-adjustable on market views; watchlist ignores this and stays alphabetical |
+| `WatchlistProvider` | `watchlistIds` | Domain-level watchlist selection, shared across routes. Fetched from and persisted to the .NET API. |
+| `HomeContent` | `allCryptos` | All coins fetched from the API on mount |
+| `HomeContent` | `sortOrder` (`asc`/`desc`), `allCoinsSortBy`, `searchQuery` | User-adjustable on market views; watchlist ignores sort and stays alphabetical |
 | `WatchlistAddContent` | `selectedIds`, `formError`, `isPending` | Form selection, validation feedback, and submit transition state |
 | `CryptoLogo` | `imgError` | Local UI fallback |
 | `ChartSection` | `timeRange`, `chartType` | Time-range selector (1D–ALL) and line/candlestick toggle |
@@ -18,17 +19,31 @@ State is owned by the nearest component that needs it. CoinSight uses local comp
 
 ---
 
-## Home Page — View & Order Flow
+## Watchlist — API-Backed State
+
+The watchlist provider (`use-watchlist.tsx`) has been rewired from localStorage to API calls:
+
+1. **On mount**: `useEffect` calls `fetchWatchlist()` from `crypto-api.ts` and populates `watchlistIds` state.
+2. **Add coin**: calls `addToWatchlist(coinId)` via the API, then updates local state on success. The API handles duplicate detection (409) and missing coin validation (404).
+3. **Remove coin**: calls `removeFromWatchlist(coinId)` via the API, then removes the ID from local state on success.
+4. **Bulk add**: `addManyToWatchlist` calls `addToWatchlist` for each ID in parallel using `Promise.all`.
+
+Local React state is kept in sync with the API to ensure the UI updates immediately without waiting for a re-fetch.
+
+---
+
+## Home Page — Data & View Flow
 
 1. `app/page.tsx` renders `HomeContent` inside `<Suspense>` — the route file contains zero logic.
-2. `HomeContent` reads `?view=` and resolves a default view:
+2. `HomeContent` fetches all coins from the API on mount via `fetchAllCoins()` and stores them in `allCryptos` state.
+3. It reads `?view=` and resolves a default view:
    - `watchlist` when watchlist has data
    - `all` when watchlist is empty
-3. Tab visibility is data-aware: `watchlist` tab is hidden until at least one coin has been added.
-4. Ordering rules:
+4. Tab visibility is data-aware: `watchlist` tab is hidden until at least one coin has been added.
+5. Ordering rules:
    - `watchlist` → always alphabetical by coin name
    - `all`, `gainers`, `volume` → high/low toggle controls direction
-5. Final list flows through `Watchlist` → `CryptoGrid` → `CryptoCard`.
+6. Final list flows through `Watchlist` → `CryptoGrid` → `CryptoCard`.
 
 ### User clicks a Navbar tab
 
@@ -36,17 +51,16 @@ State is owned by the nearest component that needs it. CoinSight uses local comp
 
 ### User adds coins to watchlist
 
-`HomeContent` → `Add to watchlist` link → `app/watchlist/add/page.tsx` → form submit updates `WatchlistProvider` → route transitions back to `/?view=watchlist`.
-
-The provider de-duplicates IDs and persists them in localStorage for refresh-safe continuity.
+`HomeContent` → `Add to watchlist` link → `app/watchlist/add/page.tsx` → form submit calls API via `WatchlistProvider` → route transitions back to `/?view=watchlist`.
 
 ---
 
 ## Detail Page
 
-1. `app/crypto/[id]/page.tsx` is a **server component** that resolves `params.id` and calls `getCryptoById(id)`.
-2. If not found → `notFound()` renders `not-found.tsx` with a link home.
-3. If found → renders coin header, market metric cards, and `ChartSection` (client component) with `cryptoId`, `symbol`, `price`, and `change24h` as props.
+1. `app/crypto/[id]/page.tsx` is a **server component** with `export const dynamic = "force-dynamic"`.
+2. It calls `fetchCoinById(id)` from `crypto-api.ts`, which fetches from the .NET API.
+3. If not found → `notFound()` renders `not-found.tsx` with a link home.
+4. If found → renders coin header, market metric cards, and `ChartSection` (client component) with `cryptoId`, `symbol`, `price`, and `change24h` as props.
 
 ---
 
@@ -57,3 +71,4 @@ The provider de-duplicates IDs and persists them in localStorage for refresh-saf
 - Derive values with `useMemo` instead of storing computed data in state.
 - Lift state up only when sibling components need to share it.
 - Add explicit validation/loading/error states for form-based interactions.
+- Sync local state with API responses to keep the UI responsive while maintaining server-side persistence.
