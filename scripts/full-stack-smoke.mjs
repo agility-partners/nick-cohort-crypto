@@ -2,7 +2,7 @@ import { chromium } from "@playwright/test";
 
 const API_BASE_URL = "http://localhost:5000";
 const FRONTEND_BASE_URL = "http://127.0.0.1:3000";
-const EXPECTED_COIN_COUNT = 23;
+const EXPECTED_COIN_COUNT = 24;
 
 function logStep(message) {
   console.log(`\n[STEP] ${message}`);
@@ -89,7 +89,7 @@ async function runApiTests() {
       fail(`GET /api/coins expected ${EXPECTED_COIN_COUNT} coins, got ${coins.length}.`);
     }
 
-    pass("1) GET /api/coins returns 23 coins");
+    pass("1) GET /api/coins returns 24 coins");
   }
 
   {
@@ -199,7 +199,7 @@ async function runFrontendTests() {
     if (coinLinkCount !== EXPECTED_COIN_COUNT) {
       fail(`11) Home expected ${EXPECTED_COIN_COUNT} coin cards, found ${coinLinkCount}.`);
     }
-    pass("11) Home page loads with 23 coins from API");
+    pass("11) Home page loads with 24 coins from API");
 
     await page.getByRole("link", { name: "View details for Bitcoin" }).click();
     await page.waitForURL("**/crypto/bitcoin");

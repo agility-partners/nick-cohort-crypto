@@ -38,6 +38,13 @@ api/
   Program.cs                 ← DI registration, CORS, Swagger, middleware pipeline
   Dockerfile                 ← Multi-stage build (SDK → ASP.NET runtime)
   CryptoApi.csproj           ← Project file targeting net8.0
+
+api-tests/
+  CoinSightApiFactory.cs     ← Custom WebApplicationFactory (Singleton DI + suppressed logging)
+  CoinsEndpointTests.cs      ← 5 tests for coin endpoints
+  WatchlistEndpointTests.cs  ← 8 tests for watchlist endpoints
+  ErrorHandlingTests.cs      ← 2 tests for error response formats
+  CryptoApi.Tests.csproj     ← Test project (xUnit, Microsoft.AspNetCore.Mvc.Testing)
 ```
 
 ---

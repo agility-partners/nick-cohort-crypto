@@ -110,7 +110,7 @@ In addition to the Playwright spec files, a comprehensive smoke test script live
 
 ### API tests (10 checks)
 
-1. GET /api/coins returns 23 coins
+1. GET /api/coins returns 24 coins
 2. GET /api/coins/bitcoin returns Bitcoin
 3. GET /api/coins/fakecoin returns 404
 4. GET /api/watchlist is empty
@@ -123,7 +123,7 @@ In addition to the Playwright spec files, a comprehensive smoke test script live
 
 ### Frontend tests (5 checks)
 
-11. Home page loads with 23 coins from API
+11. Home page loads with 24 coins from API
 12. Clicking a coin loads detail page from API
 13. Add to watchlist persists via API after refresh
 14. Remove from watchlist persists after refresh

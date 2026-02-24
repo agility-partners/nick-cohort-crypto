@@ -21,7 +21,7 @@ The frontend never imports mock data directly into components. All coin and watc
 
 The API stores coin data in-memory:
 
-- **Coins**: a `static List<Coin>` seeded with 23 cryptocurrencies in `CoinService.cs`.
+- **Coins**: a `static List<Coin>` seeded with 24 cryptocurrencies in `CoinService.cs`.
 - **Watchlist**: an instance-level `List<WatchlistItem>` managed per request (scoped DI lifetime).
 - **Mapping**: internal `Coin` objects are mapped to `CoinDto` before leaving the service layer. Controllers and the frontend never see the internal model.
 

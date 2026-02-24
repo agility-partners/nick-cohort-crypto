@@ -70,9 +70,18 @@ npm run build
 npm run start
 ```
 
-## End-to-end tests (Playwright)
+## Tests
 
-Run the Playwright suite:
+### API integration tests (xUnit)
+
+15 tests covering all endpoints, error handling, and DTO shape validation. Runs in-memory via `WebApplicationFactory` — no Docker or running server needed.
+
+```bash
+cd api-tests
+dotnet test
+```
+
+### End-to-end tests (Playwright)
 
 ```bash
 npm run test:e2e
@@ -94,13 +103,11 @@ npx playwright show-report
 
 ### Full-stack smoke test
 
-A comprehensive smoke test script covers all 5 API endpoints (10 tests) and frontend integration (5 browser tests):
+Covers all 5 API endpoints (10 tests) and frontend integration (5 browser tests). Requires both the API (port 5000) and frontend (port 3000) to be running.
 
 ```bash
 node scripts/full-stack-smoke.mjs
 ```
-
-Requires both the API (port 5000) and frontend (port 3000) to be running.
 
 ## Project shape
 
@@ -120,16 +127,18 @@ Requires both the API (port 5000) and frontend (port 3000) to be running.
 
 ## Documentation map
 
-- `docs/overview.md`
-- `docs/folder-structure.md`
-- `docs/routing.md`
-- `docs/component-hierarchy.md`
-- `docs/state-management.md`
-- `docs/chart-system.md`
-- `docs/data-model.md`
-- `docs/theming.md`
-- `docs/playwright-testing.md`
-- `docs/decisions.md`
-- `docs/roadmap.md`
-- `docs/api-architecture.md`
-- `docs/docker.md`
+| Doc | What it covers |
+| --- | --- |
+| [overview.md](docs/overview.md) | Tech stack, high-level architecture, and links to all other docs |
+| [folder-structure.md](docs/folder-structure.md) | Project layout, naming conventions, domain organization |
+| [routing.md](docs/routing.md) | Route map, layout hierarchy, API proxy rewrite, query-param navigation |
+| [component-hierarchy.md](docs/component-hierarchy.md) | Render trees for shell, home, and detail pages |
+| [state-management.md](docs/state-management.md) | State ownership, API-backed watchlist, sort/view lifecycle |
+| [chart-system.md](docs/chart-system.md) | Chart architecture, seeded PRNG data generation, SVG layers |
+| [data-model.md](docs/data-model.md) | Data flow from API to frontend, type system, image fallbacks |
+| [theming.md](docs/theming.md) | Theme toggle flow, CSS custom properties, hydration safety |
+| [api-architecture.md](docs/api-architecture.md) | .NET 8 API structure, endpoints, DI, CORS, middleware, logging, tests |
+| [docker.md](docs/docker.md) | Dockerfiles, Docker Compose, multi-stage builds, networking |
+| [playwright-testing.md](docs/playwright-testing.md) | E2E setup, commands, suite coverage, full-stack smoke test |
+| [decisions.md](docs/decisions.md) | Key architectural decisions and reasoning |
+| [roadmap.md](docs/roadmap.md) | Completed work, known gaps, and evolution path |
