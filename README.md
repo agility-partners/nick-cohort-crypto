@@ -109,6 +109,17 @@ Covers all 5 API endpoints (10 tests) and frontend integration (5 browser tests)
 node scripts/full-stack-smoke.mjs
 ```
 
+### SQL ingestion script (CoinGecko -> SQL Server)
+
+Prerequisites: Python 3.10+, running SQL Server container on `localhost:1433`
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r scripts/requirements.txt
+python3 scripts/ingest_coins.py
+```
+
 ## Project shape
 
 - `app/`: route files only (`page.tsx`, `layout.tsx`, route-level `not-found.tsx`)
@@ -116,6 +127,7 @@ node scripts/full-stack-smoke.mjs
 - `shared/components/`: reusable cross-feature UI (header, nav, theme primitives)
 - `api/`: C# / .NET 8 REST API (controllers, services, models, DTOs)
 - `scripts/`: full-stack smoke test
+- `scripts/`: smoke test and SQL ingestion utilities
 - `docs/`: source-of-truth architecture and implementation notes
 
 ## Key constraints
