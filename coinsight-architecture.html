@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoinSight Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f1117; color: #e1e4e8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 40px; min-height: 100vh; }
+  h1 { text-align: center; font-size: 28px; margin-bottom: 8px; color: #fff; }
+  .subtitle { text-align: center; font-size: 14px; color: #8b949e; margin-bottom: 48px; }
+  .diagram { max-width: 1100px; margin: 0 auto; position: relative; }
+
+  /* External source */
+  .external { display: flex; justify-content: center; margin-bottom: 32px; }
+  .external-box { background: linear-gradient(135deg, #1a1e2e, #252a3a); border: 2px solid #f0883e; border-radius: 16px; padding: 20px 36px; text-align: center; }
+  .external-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #f0883e; margin-bottom: 6px; }
+  .external-box .name { font-size: 18px; font-weight: 600; }
+  .external-box .detail { font-size: 12px; color: #8b949e; margin-top: 4px; }
+
+  /* Arrow */
+  .arrow-down { display: flex; flex-direction: column; align-items: center; margin: 8px 0; }
+  .arrow-down .line { width: 2px; height: 24px; background: #30363d; }
+  .arrow-down .head { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #30363d; }
+  .arrow-down .arrow-label { font-size: 11px; color: #8b949e; margin: 4px 0; }
+
+  /* Docker container */
+  .docker-container { border: 2px dashed #1f6feb; border-radius: 20px; padding: 32px 24px 24px; position: relative; margin-bottom: 32px; }
+  .docker-label { position: absolute; top: -14px; left: 32px; background: #0f1117; padding: 2px 16px; font-size: 13px; color: #1f6feb; font-weight: 600; letter-spacing: 0.5px; }
+
+  /* Medallion pipeline */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin-bottom: 24px; }
+  .pipeline-step { flex: 1; position: relative; }
+  .pipeline-box { border-radius: 14px; padding: 20px; height: 100%; }
+  .bronze .pipeline-box { background: linear-gradient(135deg, #2a1f14, #1f1a14); border: 2px solid #cd7f32; }
+  .silver .pipeline-box { background: linear-gradient(135deg, #1a1f2a, #1a1a22); border: 2px solid #c0c0c0; }
+  .gold .pipeline-box { background: linear-gradient(135deg, #2a2514, #1f1c14); border: 2px solid #ffd700; }
+
+  .pipeline-box .tier { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; font-weight: 700; }
+  .bronze .tier { color: #cd7f32; }
+  .silver .tier { color: #c0c0c0; }
+  .gold .tier { color: #ffd700; }
+  .pipeline-box .table-name { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .pipeline-box .desc { font-size: 12px; color: #8b949e; line-height: 1.5; }
+  .pipeline-box .tech { display: inline-block; margin-top: 10px; font-size: 11px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.06); color: #8b949e; }
+
+  .pipeline-arrow { display: flex; align-items: center; justify-content: center; width: 60px; min-width: 60px; }
+  .pipeline-arrow .h-arrow { display: flex; align-items: center; }
+  .pipeline-arrow .h-line { width: 30px; height: 2px; background: #30363d; }
+  .pipeline-arrow .h-head { width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 10px solid #30363d; }
+  .pipeline-arrow .h-label { font-size: 10px; color: #58a6ff; position: absolute; margin-top: -24px; white-space: nowrap; }
+
+  /* Services row */
+  .services { display: flex; gap: 20px; }
+  .service { flex: 1; border-radius: 14px; padding: 20px; text-align: center; }
+  .service.python { background: linear-gradient(135deg, #1a2214, #161c14); border: 2px solid #3fb950; }
+  .service.dotnet { background: linear-gradient(135deg, #1f1428, #1a1422); border: 2px solid #bc8cff; }
+  .service.nextjs { background: linear-gradient(135deg, #14202a, #141a22); border: 2px solid #58a6ff; }
+
+  .service .svc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; font-weight: 700; }
+  .service.python .svc-label { color: #3fb950; }
+  .service.dotnet .svc-label { color: #bc8cff; }
+  .service.nextjs .svc-label { color: #58a6ff; }
+  .service .svc-name { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .service .svc-detail { font-size: 12px; color: #8b949e; line-height: 1.5; }
+  .service .svc-port { display: inline-block; margin-top: 10px; font-size: 11px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.06); color: #8b949e; }
+
+  /* Connection labels */
+  .connections { display: flex; justify-content: space-between; margin: 16px 0; padding: 0 60px; }
+  .conn { display: flex; flex-direction: column; align-items: center; }
+  .conn .line { width: 2px; height: 20px; }
+  .conn .head { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; }
+  .conn-up .line { background: #3fb950; }
+  .conn-up .head { border-bottom: 8px solid #3fb950; }
+  .conn-down .line { background: #bc8cff; }
+  .conn-down .head { border-top: 8px solid #bc8cff; }
+  .conn-right .line { background: #58a6ff; }
+  .conn-right .head { border-top: 8px solid #58a6ff; }
+  .conn-label { font-size: 10px; color: #8b949e; margin: 4px 0; }
+
+  /* Flow annotations */
+  .flow-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0; }
+  .flow-row .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .flow-row .step-text { font-size: 13px; color: #8b949e; }
+
+  /* User */
+  .user-row { display: flex; justify-content: flex-end; margin-top: 24px; padding-right: 60px; }
+  .user-box { background: linear-gradient(135deg, #1a1e2e, #252a3a); border: 2px solid #58a6ff; border-radius: 16px; padding: 16px 32px; text-align: center; }
+  .user-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #58a6ff; margin-bottom: 4px; }
+  .user-box .name { font-size: 16px; font-weight: 600; }
+
+  /* Legend */
+  .legend { display: flex; justify-content: center; gap: 32px; margin-top: 48px; padding-top: 24px; border-top: 1px solid #21262d; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8b949e; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Data flow summary */
+  .flow-summary { max-width: 800px; margin: 40px auto 0; background: #161b22; border-radius: 14px; padding: 24px 32px; border: 1px solid #21262d; }
+  .flow-summary h3 { font-size: 16px; margin-bottom: 16px; color: #fff; }
+  .flow-step { display: flex; gap: 16px; margin-bottom: 14px; align-items: flex-start; }
+  .flow-step:last-child { margin-bottom: 0; }
+  .flow-num { min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+  .flow-num.n1 { background: #3fb950; }
+  .flow-num.n2 { background: #cd7f32; }
+  .flow-num.n3 { background: #c0c0c0; color: #0f1117; }
+  .flow-num.n4 { background: #ffd700; color: #0f1117; }
+  .flow-num.n5 { background: #bc8cff; color: #0f1117; }
+  .flow-num.n6 { background: #58a6ff; }
+  .flow-desc { font-size: 13px; color: #c9d1d9; line-height: 1.5; padding-top: 4px; }
+  .flow-desc strong { color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>CoinSight Architecture</h1>
+<p class="subtitle">Full-Stack Crypto Dashboard with Medallion Data Pipeline</p>
+
+<div class="diagram">
+
+  <!-- CoinGecko -->
+  <div class="external">
+    <div class="external-box">
+      <div class="label">External API</div>
+      <div class="name">CoinGecko</div>
+      <div class="detail">/api/v3/coins/markets — Top 50 by market cap</div>
+    </div>
+  </div>
+
+  <div class="arrow-down">
+    <div class="line"></div>
+    <div class="arrow-label">JSON response</div>
+    <div class="line"></div>
+    <div class="head"></div>
+  </div>
+
+  <!-- Docker -->
+  <div class="docker-container">
+    <div class="docker-label">Docker Compose</div>
+
+    <!-- Medallion Pipeline -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-left: 4px;">SQL Server (Azure SQL Edge) — Port 1433</div>
+      <div class="pipeline">
+        <div class="pipeline-step bronze">
+          <div class="pipeline-box">
+            <div class="tier">Bronze</div>
+            <div class="table-name">raw_coin_market</div>
+            <div class="desc">Raw JSON blob stored exactly as received. One row per ingestion run. Full audit trail.</div>
+            <div class="tech">NVARCHAR(MAX)</div>
+          </div>
+        </div>
+        <div class="pipeline-arrow">
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            <div class="h-label">DBT</div>
+            <div class="h-arrow">
+              <div class="h-line"></div>
+              <div class="h-head"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pipeline-step silver">
+          <div class="pipeline-box">
+            <div class="tier">Silver</div>
+            <div class="table-name">stg_coins</div>
+            <div class="desc">JSON parsed into typed columns. One row per coin. Deduplicated to latest snapshot.</div>
+            <div class="tech">VIEW — OPENJSON + ROW_NUMBER</div>
+          </div>
+        </div>
+        <div class="pipeline-arrow">
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            <div class="h-label">DBT</div>
+            <div class="h-arrow">
+              <div class="h-line"></div>
+              <div class="h-head"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pipeline-step gold">
+          <div class="pipeline-box">
+            <div class="tier">Gold</div>
+            <div class="table-name">fct_coins</div>
+            <div class="desc">Business-ready table. Column names match CoinDto exactly. API reads from here.</div>
+            <div class="tech">TABLE — Materialized</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services -->
+    <div style="font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-left: 4px;">Application Services</div>
+    <div class="services">
+      <div class="service python">
+        <div class="svc-label">Ingest</div>
+        <div class="svc-name">Python Script</div>
+        <div class="svc-detail">Fetches from CoinGecko<br>Writes raw JSON to Bronze</div>
+        <div class="svc-port">requests + pyodbc</div>
+      </div>
+      <div class="service dotnet">
+        <div class="svc-label">API</div>
+        <div class="svc-name">.NET 8 REST API</div>
+        <div class="svc-detail">Reads from Gold table<br>Serves /api/coins + /api/watchlist</div>
+        <div class="svc-port">Port 5000</div>
+      </div>
+      <div class="service nextjs">
+        <div class="svc-label">Frontend</div>
+        <div class="svc-name">Next.js 16</div>
+        <div class="svc-detail">Dashboard UI<br>Calls the .NET API</div>
+        <div class="svc-port">Port 3000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User -->
+  <div class="user-row">
+    <div class="arrow-down" style="margin-right: 80px;">
+      <div class="head" style="border-top: none; border-bottom: 10px solid #30363d; transform: rotate(180deg);"></div>
+      <div class="line"></div>
+      <div class="arrow-label">Browser</div>
+      <div class="line"></div>
+      <div class="head"></div>
+    </div>
+  </div>
+  <div class="user-row">
+    <div class="user-box">
+      <div class="label">End User</div>
+      <div class="name">localhost:3000</div>
+    </div>
+  </div>
+</div>
+
+<!-- Data Flow Summary -->
+<div class="flow-summary">
+  <h3>Data Flow</h3>
+  <div class="flow-step">
+    <div class="flow-num n1">1</div>
+    <div class="flow-desc"><strong>Python ingestion script</strong> calls CoinGecko API and dumps the full JSON response into the <strong>Bronze</strong> table.</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num n2">2</div>
+    <div class="flow-desc"><strong>DBT</strong> reads from Bronze, parses JSON with OPENJSON + JSON_VALUE, casts to proper types, and deduplicates into the <strong>Silver</strong> view.</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num n3">3</div>
+    <div class="flow-desc"><strong>DBT</strong> reads from Silver and writes a clean, business-ready <strong>Gold</strong> table with columns matching the API's CoinDto contract.</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num n4">4</div>
+    <div class="flow-desc"><strong>.NET API</strong> queries the Gold table via DatabaseCoinService and serves data through REST endpoints.</div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num n5">5</div>
+    <div class="flow-desc"><strong>Next.js frontend</strong> fetches from the API and renders the crypto dashboard for the user.</div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background: #f0883e;"></div> External API</div>
+  <div class="legend-item"><div class="legend-dot" style="background: #cd7f32;"></div> Bronze (Raw)</div>
+  <div class="legend-item"><div class="legend-dot" style="background: #c0c0c0;"></div> Silver (Cleaned)</div>
+  <div class="legend-item"><div class="legend-dot" style="background: #ffd700;"></div> Gold (Business)</div>
+  <div class="legend-item"><div class="legend-dot" style="background: #3fb950;"></div> Python</div>
+  <div class="legend-item"><div class="legend-dot" style="background: #bc8cff;"></div> .NET API</div>
+  <div class="legend-item"><div class="legend-dot" style="background: #58a6ff;"></div> Next.js</div>
+</div>
+
+</body>
+</html>
