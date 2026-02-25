@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw ingestion layer tables from external APIs"
+    database: CoinSightDB
+    schema: bronze
+    tables:
+      - name: raw_coin_market
+        description: "Raw CoinGecko market payloads captured by ingestion"
+        loaded_at_field: ingested_at
