@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime, timezone
 
 import pyodbc
@@ -13,15 +14,15 @@ REQUEST_PARAMS = {
     "sparkline": "false",
 }
 
-BASE_CONNECTION_STRING = (
-    "DRIVER={ODBC Driver 18 for SQL Server};"
-    "DATABASE=CoinSightDB;"
-    "UID=sa;"
-    "PWD=CoinSight_Dev123!;"
-    "Encrypt=yes;"
-    "TrustServerCertificate=yes;"
-)
-SERVER_CANDIDATES = ["localhost,1433", "127.0.0.1,1433"]
+SQL_DRIVER = os.getenv("COINSIGHT_DB_DRIVER", "ODBC Driver 18 for SQL Server")
+DB_NAME = os.getenv("COINSIGHT_DB_NAME", "CoinSightDB")
+DB_USER = os.getenv("COINSIGHT_DB_USER", "SA")
+DB_PASSWORD = os.getenv("COINSIGHT_DB_PASSWORD") or os.getenv("SA_PASSWORD")
+DB_ENCRYPT = os.getenv("COINSIGHT_DB_ENCRYPT", "yes")
+DB_TRUST_CERT = os.getenv("COINSIGHT_DB_TRUST_CERT", "yes")
+SERVER_CANDIDATES = os.getenv(
+    "COINSIGHT_DB_SERVERS", "localhost,1433;127.0.0.1,1433"
+).split(";")
 
 
 def fetch_coin_market_data() -> list[dict]:
@@ -41,10 +42,22 @@ def insert_raw_payload(raw_json: str, coin_count: int) -> None:
         VALUES (?, ?)
     """
 
+    if not DB_PASSWORD:
+        raise ValueError("Missing COINSIGHT_DB_PASSWORD (or SA_PASSWORD) environment variable.")
+
+    base_connection_string = (
+        f"DRIVER={{{SQL_DRIVER}}};"
+        f"DATABASE={DB_NAME};"
+        f"UID={DB_USER};"
+        f"PWD={DB_PASSWORD};"
+        f"Encrypt={DB_ENCRYPT};"
+        f"TrustServerCertificate={DB_TRUST_CERT};"
+    )
+
     last_error: pyodbc.Error | None = None
 
     for server in SERVER_CANDIDATES:
-        connection_string = f"{BASE_CONNECTION_STRING}SERVER={server};"
+        connection_string = f"{base_connection_string}SERVER={server.strip()};"
         try:
             with pyodbc.connect(connection_string, timeout=10) as connection:
                 with connection.cursor() as cursor:
@@ -75,6 +88,9 @@ def main() -> None:
         insert_raw_payload(raw_json, coin_count)
     except pyodbc.Error as error:
         print(f"Database connection/insert failed: {error}")
+        return
+    except ValueError as error:
+        print(f"Configuration error: {error}")
         return
 
     timestamp = datetime.now(timezone.utc).isoformat()

@@ -57,6 +57,7 @@ Open http://localhost:3000 (frontend) and http://localhost:5000/swagger (API doc
 Prerequisites: Docker
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
@@ -117,6 +118,7 @@ Prerequisites: Python 3.10+, running SQL Server container on `localhost:1433`
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r scripts/requirements.txt
+export COINSIGHT_DB_PASSWORD="your-sa-password"
 python3 scripts/ingest_coins.py
 ```
 
@@ -126,7 +128,6 @@ python3 scripts/ingest_coins.py
 - `domains/crypto/`: feature logic, UI components, types, and API service layer
 - `shared/components/`: reusable cross-feature UI (header, nav, theme primitives)
 - `api/`: C# / .NET 8 REST API (controllers, services, models, DTOs)
-- `scripts/`: full-stack smoke test
 - `scripts/`: smoke test and SQL ingestion utilities
 - `docs/`: source-of-truth architecture and implementation notes
 
