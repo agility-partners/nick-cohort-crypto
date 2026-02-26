@@ -9,7 +9,15 @@ const string FrontendCorsPolicy = "FrontendCors";
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<ICoinService, CoinService>();
+var coinSightDbConnectionString = builder.Configuration.GetConnectionString("CoinSightDb");
+if (string.IsNullOrWhiteSpace(coinSightDbConnectionString))
+{
+    builder.Services.AddScoped<ICoinService, CoinService>();
+}
+else
+{
+    builder.Services.AddScoped<ICoinService, DatabaseCoinService>();
+}
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(FrontendCorsPolicy, policy =>
