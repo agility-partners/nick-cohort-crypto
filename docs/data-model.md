@@ -1,29 +1,35 @@
 # Data Model
 
-All coin data flows from the .NET 8 REST API to the Next.js frontend via HTTP. The frontend fetches data through `domains/crypto/services/crypto-api.ts`, which wraps the API endpoints. Chart data is still generated client-side using a deterministic seeded PRNG.
+All coin data flows from the live data pipeline through the .NET 8 REST API to the Next.js frontend via HTTP. The frontend fetches data through `domains/crypto/services/crypto-api.ts`, which wraps the API endpoints. Chart data is generated client-side using a deterministic seeded PRNG.
 
 ---
 
-## Data Flow
+## Full Data Flow
 
 ```
-.NET API (CoinService)
-  → JSON over HTTP
-    → crypto-api.ts (fetch wrapper)
-      → React components (state + render)
+CoinGecko API
+  → ingest_coins.py (every 5 min)
+    → bronze.raw_coin_market (SQL Server)
+      → dbt run (silver.stg_coins → gold.fct_coins)
+        → DatabaseCoinService (SELECT FROM gold.fct_coins)
+          → CoinDto[] over HTTP
+            → crypto-api.ts (fetch wrapper)
+              → React components (state + render)
 ```
 
-The frontend never imports mock data directly into components. All coin and watchlist data comes from the API.
+The frontend never imports mock data directly into components. All coin and watchlist data comes from the API, which reads from the live Gold layer.
+
+See [data-pipeline.md](data-pipeline.md) for the complete Bronze → Silver → Gold pipeline reference.
 
 ---
 
 ## API Data Source
 
-The API stores coin data in-memory:
+The API reads live data from SQL Server:
 
-- **Coins**: a `static List<Coin>` seeded with 24 cryptocurrencies in `CoinService.cs`.
-- **Watchlist**: an instance-level `List<WatchlistItem>` managed per request (scoped DI lifetime).
-- **Mapping**: internal `Coin` objects are mapped to `CoinDto` before leaving the service layer. Controllers and the frontend never see the internal model.
+- **Coins**: `DatabaseCoinService` queries `gold.fct_coins` (built by dbt from ingested CoinGecko data), ordered by market cap descending.
+- **Watchlist**: an instance-level `List<WatchlistItem>` managed in memory on the service instance (resets on API restart).
+- **Mapping**: `MapReaderToCoinDto()` converts `SqlDataReader` columns to `CoinDto`. Controllers and the frontend never see raw SQL types.
 
 ---
 

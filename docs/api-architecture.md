@@ -21,23 +21,24 @@ CoinSight's backend is a C# / .NET 8 REST API that serves coin data and manages 
 ```
 api/
   Controllers/
-    CoinsController.cs       ← GET /api/coins, GET /api/coins/{id}
-    WatchlistController.cs   ← GET /api/watchlist, POST /api/watchlist, DELETE /api/watchlist/{coinId}
+    CoinsController.cs         ← GET /api/coins, GET /api/coins/{id}
+    WatchlistController.cs     ← GET /api/watchlist, POST /api/watchlist, DELETE /api/watchlist/{coinId}
   Middleware/
     ErrorHandlingMiddleware.cs ← Catches unhandled exceptions, returns consistent JSON errors
   Services/
-    ICoinService.cs          ← Interface defining all business logic methods
-    CoinService.cs           ← In-memory implementation with 24 seeded coins + ILogger
+    ICoinService.cs            ← Interface defining all business logic methods
+    CoinService.cs             ← In-memory implementation (24 seeded coins, fallback/tests)
+    DatabaseCoinService.cs     ← Live implementation — queries gold.fct_coins via SqlConnection
   Models/
-    Coin.cs                  ← Internal domain model (all coin properties)
-    WatchlistItem.cs         ← Internal model (Id, CoinId, AddedAt)
+    Coin.cs                    ← Internal domain model (all coin properties)
+    WatchlistItem.cs           ← Internal model (Id, CoinId, AddedAt)
   DTOs/
-    CoinDto.cs               ← API response shape (matches frontend Crypto type)
-    AddWatchlistRequest.cs   ← POST body with [Required] validation on CoinId
-    AddToWatchlistResult.cs  ← Internal result type with IsConflict flag
-  Program.cs                 ← DI registration, CORS, Swagger, middleware pipeline
-  Dockerfile                 ← Multi-stage build (SDK → ASP.NET runtime)
-  CryptoApi.csproj           ← Project file targeting net8.0
+    CoinDto.cs                 ← API response shape (matches frontend Crypto type)
+    AddWatchlistRequest.cs     ← POST body with [Required] validation on CoinId
+    AddToWatchlistResult.cs    ← Internal result type with IsConflict flag
+  Program.cs                   ← DI registration, CORS, Swagger, middleware pipeline
+  Dockerfile                   ← Multi-stage build (SDK → ASP.NET runtime)
+  CryptoApi.csproj             ← Project file targeting net8.0
 
 api-tests/
   CoinSightApiFactory.cs     ← Custom WebApplicationFactory (Singleton DI + suppressed logging)
@@ -53,7 +54,7 @@ api-tests/
 
 | Method | Route | Success | Failure | Description |
 | --- | --- | --- | --- | --- |
-| GET | `/api/coins` | 200 + `CoinDto[]` | — | List all 24 coins |
+| GET | `/api/coins` | 200 + `CoinDto[]` | — | List all coins from `gold.fct_coins` |
 | GET | `/api/coins/{id}` | 200 + `CoinDto` | 404 | Get single coin by ID |
 | GET | `/api/watchlist` | 200 + `CoinDto[]` | — | List watchlisted coins |
 | POST | `/api/watchlist` | 201 + `CoinDto` | 400 (validation), 404 (coin not found), 409 (duplicate) | Add coin to watchlist |
@@ -157,13 +158,28 @@ Log levels follow ASP.NET Core conventions: `Information` for successful operati
 
 ## Data Layer
 
-The current implementation uses in-memory data:
+The API has two `ICoinService` implementations registered in `Program.cs`:
 
-- **Coins**: a `static List<Coin>` seeded with 24 cryptocurrencies matching the frontend mock data.
-- **Watchlist**: an instance-level `List<WatchlistItem>` that resets per request (scoped lifetime).
-- **Mapping**: a private `MapToCoinDto()` method converts internal `Coin` objects to `CoinDto` responses.
+**`DatabaseCoinService`** (active in production / Docker):
+- Queries `gold.fct_coins` via `SqlConnection` using `Microsoft.Data.SqlClient`
+- Connection string comes from `appsettings.json` → `ConnectionStrings:CoinSightDb`
+- Returns live data ingested by the Python service and transformed by dbt
+- Watchlist is kept in-memory (`List<WatchlistItem>`) on the service instance
 
-This is intentionally simple. The interface-based design means a database-backed implementation can replace `CoinService` without touching any controller code.
+**`CoinService`** (used by integration tests):
+- Static `List<Coin>` seeded with 24 cryptocurrencies
+- No database dependency — allows tests to run without Docker or SQL Server
+
+The interface-based design (`ICoinService`) means swapping implementations requires only changing one line in `Program.cs`.
+
+### SQL query (`GetAllCoins`)
+
+```sql
+SELECT id, name, symbol, price, change_24h, market_cap, volume_24h,
+       image, circulating_supply, all_time_high, all_time_low
+FROM gold.fct_coins
+ORDER BY market_cap DESC
+```
 
 ---
 
