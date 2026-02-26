@@ -16,14 +16,13 @@
 - dbt transformation layer (silver.stg_coins → gold.fct_coins, market_summary, top_movers)
 - DatabaseCoinService (live API reads from gold.fct_coins via SqlConnection)
 - 4-service Docker Compose (sqlserver + ingest + api + frontend, all on app-net)
+- Watchlist persisted to SQL Server (`dbo.watchlist` table) — survives API restarts and container rebuilds
 
 ---
 
 ## Known Gaps
 
-- Watchlist state resets between API restarts (in-memory, not persisted to SQL)
 - Sort/view state not persisted across sessions (theme is persisted by `next-themes` via localStorage)
-- Chart time-range and type selections reset on navigation
 - No authentication or user-specific watchlists
 - No health check endpoint for Docker readiness probes (sqlserver ready before ingest/api connect)
 - dbt must be run manually from the host; no automated trigger after each ingestion cycle
@@ -35,8 +34,7 @@
 
 1. Add a Docker service or cron job to run `dbt run` automatically after each ingestion cycle
 2. Add health check endpoint (`/health`) and Docker `healthcheck` + `depends_on: condition: service_healthy` for proper startup ordering
-3. Persist watchlist state to SQL Server (new `watchlist` table, scoped EF Core or raw SqlClient)
-4. Replace mock price series in charts with real historical data (CoinGecko `/coins/{id}/market_chart`)
-5. Add authentication to support per-user watchlists
-6. Persist view/sort preferences in URL params or localStorage
-7. Set up CI/CD pipeline (GitHub Actions for lint, test, build, and Docker image push)
+3. Replace mock price series in charts with real historical data (CoinGecko `/coins/{id}/market_chart`)
+4. Add authentication to support per-user watchlists
+5. Persist view/sort preferences in URL params or localStorage
+6. Set up CI/CD pipeline (GitHub Actions for lint, test, build, and Docker image push)

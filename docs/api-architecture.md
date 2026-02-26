@@ -27,8 +27,8 @@ api/
     ErrorHandlingMiddleware.cs ← Catches unhandled exceptions, returns consistent JSON errors
   Services/
     ICoinService.cs            ← Interface defining all business logic methods
-    CoinService.cs             ← In-memory implementation (24 seeded coins, fallback/tests)
-    DatabaseCoinService.cs     ← Live implementation — queries gold.fct_coins via SqlConnection
+    CoinService.cs             ← In-memory implementation (24 seeded coins, used by integration tests)
+    DatabaseCoinService.cs     ← Live implementation — queries gold.fct_coins + dbo.watchlist via SqlConnection
   Models/
     Coin.cs                    ← Internal domain model (all coin properties)
     WatchlistItem.cs           ← Internal model (Id, CoinId, AddedAt)
@@ -80,13 +80,17 @@ Controllers never contain business logic. They call the service and translate th
 
 ## Dependency Injection
 
-Services are registered in `Program.cs`:
+Services are registered in `Program.cs` with a conditional swap:
 
 ```csharp
-builder.Services.AddScoped<ICoinService, CoinService>();
+var coinSightDbConnectionString = builder.Configuration.GetConnectionString("CoinSightDb");
+if (string.IsNullOrWhiteSpace(coinSightDbConnectionString))
+    builder.Services.AddScoped<ICoinService, CoinService>();
+else
+    builder.Services.AddScoped<ICoinService, DatabaseCoinService>();
 ```
 
-`AddScoped` creates one `CoinService` instance per HTTP request. Controllers depend on `ICoinService` (the interface), not `CoinService` (the concrete class). This allows swapping implementations (e.g., database-backed service) by changing one line in `Program.cs`.
+When a `CoinSightDb` connection string is present (Docker / production), the API uses `DatabaseCoinService` which queries SQL Server. Without it (local dev, integration tests), it falls back to the in-memory `CoinService`. Controllers depend on `ICoinService` (the interface) and are unaware of which implementation is active.
 
 ---
 
@@ -164,7 +168,8 @@ The API has two `ICoinService` implementations registered in `Program.cs`:
 - Queries `gold.fct_coins` via `SqlConnection` using `Microsoft.Data.SqlClient`
 - Connection string is injected via the `ConnectionStrings__CoinSightDb` environment variable in `docker-compose.yml`; locally it comes from `appsettings.Development.json`
 - Returns live data ingested by the Python service and transformed by dbt
-- Watchlist is kept in-memory (`List<WatchlistItem>`) on the service instance
+- Watchlist is persisted in `dbo.watchlist` (SQL Server table) — survives API restarts and container rebuilds
+- `GetWatchlist()` joins `gold.fct_coins` with `dbo.watchlist`; `AddToWatchlist()` and `RemoveFromWatchlist()` issue INSERT/DELETE against `dbo.watchlist`
 
 **`CoinService`** (used by integration tests):
 - Static `List<Coin>` seeded with 24 cryptocurrencies
@@ -172,13 +177,25 @@ The API has two `ICoinService` implementations registered in `Program.cs`:
 
 The interface-based design (`ICoinService`) means swapping implementations requires only changing one line in `Program.cs`.
 
-### SQL query (`GetAllCoins`)
+### SQL queries
+
+**`GetAllCoins`** — list all coins:
 
 ```sql
 SELECT id, name, symbol, price, change_24h, market_cap, volume_24h,
        image, circulating_supply, all_time_high, all_time_low
 FROM gold.fct_coins
 ORDER BY market_cap DESC
+```
+
+**`GetWatchlist`** — list watchlisted coins (joins fact table with watchlist):
+
+```sql
+SELECT c.id, c.name, c.symbol, c.price, c.change_24h, c.market_cap,
+       c.volume_24h, c.image, c.circulating_supply, c.all_time_high, c.all_time_low
+FROM gold.fct_coins c
+INNER JOIN dbo.watchlist w ON c.id = w.coin_id
+ORDER BY w.added_at DESC
 ```
 
 ---

@@ -13,7 +13,7 @@ State is owned by the nearest component that needs it. CoinSight uses local comp
 | `HomeContent` | `sortOrder` (`asc`/`desc`), `allCoinsSortBy`, `searchQuery` | User-adjustable on market views; watchlist ignores sort and stays alphabetical |
 | `WatchlistAddContent` | `selectedIds`, `formError`, `isPending` | Form selection, validation feedback, and submit transition state |
 | `CryptoLogo` | `imgError` | Local UI fallback |
-| `ChartSection` | `timeRange`, `chartType` | Time-range selector (1D–ALL) and line/candlestick toggle |
+| `ChartSection` | `chartType` | Line/candlestick toggle (chart always shows all-time trend) |
 | `PriceChart` | `activeIndex` | Hover tooltip tracking |
 | `ThemeProvider` | theme (`dark`/`light`) | Global, persisted in localStorage by `next-themes` |
 

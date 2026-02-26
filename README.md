@@ -203,7 +203,7 @@ domains/crypto/              — feature logic, UI components, types, API servic
 shared/components/           — reusable cross-feature UI (header, nav, theme)
 api/                         — C# / .NET 8 REST API (controllers, services, DTOs)
   Services/
-    DatabaseCoinService.cs   — reads from gold.fct_coins via SqlConnection
+    DatabaseCoinService.cs   — reads from gold.fct_coins + dbo.watchlist via SqlConnection
 scripts/
   ingest_coins.py            — CoinGecko → bronze.raw_coin_market
   Dockerfile.ingest          — python:3.12-slim + ODBC Driver 18 + loop entrypoint

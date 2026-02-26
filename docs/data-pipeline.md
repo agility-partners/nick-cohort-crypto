@@ -49,6 +49,18 @@ The ingestion script calls the CoinGecko `/coins/markets` endpoint (top 50 coins
 | `raw_json` | nvarchar(max) | Full CoinGecko JSON array for all 50 coins |
 | `coin_count` | int | Number of coins in the payload (for quick auditing) |
 
+### Application tables
+
+**Table**: `dbo.watchlist`
+
+Stores user watchlist selections. Created by `scripts/init-db.sql` and queried by `DatabaseCoinService`.
+
+| Column | Type | Description |
+| --- | --- | --- |
+| `id` | uniqueidentifier | Primary key (default: `NEWID()`) |
+| `coin_id` | nvarchar(100) | Coin ID (unique constraint — one entry per coin) |
+| `added_at` | datetime2 | UTC timestamp when the coin was added (default: `GETUTCDATE()`) |
+
 ### Ingestion loop
 
 The `ingest` Docker service runs `/entrypoint.sh`, which executes `ingest_coins.py` immediately on startup and then repeats every 300 seconds:
@@ -194,8 +206,8 @@ coin_dbt/
        └─ gold.market_summary view created/replaced
        └─ gold.top_movers view created/replaced
 
-3. API requests (GET /api/coins, GET /api/coins/{id})
-       └─ DatabaseCoinService queries gold.fct_coins
+3. API requests (GET /api/coins, GET /api/coins/{id}, watchlist endpoints)
+       └─ DatabaseCoinService queries gold.fct_coins + dbo.watchlist
        └─ Returns CoinDto[] to Next.js frontend
 
 4. Ingest loop continues: new Bronze row every 5 minutes

@@ -60,7 +60,7 @@ CryptoDetailPage               (server component, force-dynamic, fetches from AP
   → Coin header + PriceDisplay (size="lg")
   → Market metric cards (Market Cap, 24h Volume, 24h Change)
   → ChartSection               (client component)
-      → Time-range pill bar     (1D, 7D, 30D, 90D, 1Y, ALL)
+      → Watchlist toggle        (add/remove star button)
       → Chart-type toggle       (Line / Candle)
       → PriceChart              (interactive SVG)
           → ChartGrid           (axis lines + labels)

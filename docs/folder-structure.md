@@ -15,7 +15,8 @@ api/                              ← C# / .NET 8 REST API
     ErrorHandlingMiddleware.cs    ← Catches unhandled exceptions, returns JSON errors
   Services/
     ICoinService.cs               ← Business logic interface
-    CoinService.cs                ← In-memory implementation (24 seeded coins) + ILogger
+    CoinService.cs                ← In-memory implementation (24 seeded coins, used by integration tests)
+    DatabaseCoinService.cs        ← Live implementation — queries gold.fct_coins + dbo.watchlist via SqlConnection
   Models/
     Coin.cs                       ← Internal domain model
     WatchlistItem.cs              ← Watchlist entry (Id, CoinId, AddedAt)
@@ -66,7 +67,7 @@ domains/crypto/                   ← Feature domain
     crypto-logo.tsx               ← next/image with fallback initials
     crypto-detail-watchlist-toggle.tsx ← Add/remove watchlist button on detail page
     price-display.tsx             ← Formatted price + change badge
-    chart-section.tsx             ← Smart component: time-range & chart-type state
+    chart-section.tsx             ← Smart component: chart-type state (all-time trend)
     chart-config.ts               ← Chart range configs and label mappings
     generate-mock-chart-data.ts   ← Seeded PRNG mock data generator
     chart-helpers.ts              ← Pure geometry/coordinate/tooltip utilities

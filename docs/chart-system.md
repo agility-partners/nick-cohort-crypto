@@ -18,19 +18,18 @@ ChartSection (state owner)
 
 ## ChartSection — State & Data
 
-`domains/crypto/components/chart-section.tsx` owns two pieces of state:
-- `timeRange` (default `"7D"`) — which time window to display
+`domains/crypto/components/chart-section.tsx` owns one piece of state:
 - `chartType` (default `"line"`) — line or candlestick mode
 
-When state or coin props change, `useMemo` calls `generateMockData()` from `generate-mock-chart-data.ts`:
+The chart always displays an all-time trend derived from the coin's current price, all-time high, and all-time low. When props change, `useMemo` calls `generateAllTimeData()` from `generate-mock-chart-data.ts`:
 
-1. A **seeded PRNG** (Linear Congruential Generator) derives a seed from the coin ID + time range, producing a unique but deterministic series per combination.
-2. Generates **close-price values** with range-specific point counts (24 for 1D → 60 for ALL) and volatility settings from `chart-config.ts`.
+1. A **seeded PRNG** (Linear Congruential Generator) derives a seed from the coin ID, producing a unique but deterministic series.
+2. Generates **close-price values** bounded by ATL and ATH, with the final value landing at the current price.
 3. Derives **OHLC candlestick data** from the close prices (open = previous close, high/low spread by volatility).
-4. Formats **date labels** with range-appropriate `Intl.DateTimeFormat` options.
 
-The pill-bar buttons update `timeRange` → re-memo → new chart data.
 The Line/Candle toggle updates `chartType` → `PriceChart` switches rendering mode.
+
+Note: Time-range selection (1D, 7D, etc.) is still available in the **compare chart** (`compare-chart.tsx`), which uses `generateMockData()` with range-specific point counts and volatility settings from `chart-config.ts`.
 
 ---
 
@@ -67,7 +66,7 @@ The Line/Candle toggle updates `chartType` → `PriceChart` switches rendering m
 
 | File | Role |
 | ---- | ---- |
-| `chart-section.tsx` | State owner: time range + chart type |
+| `chart-section.tsx` | State owner: chart type (all-time trend, no time-range selector) |
 | `chart-config.ts` | Range configs and label mappings |
 | `generate-mock-chart-data.ts` | Seeded PRNG data generator |
 | `chart-helpers.ts` | Pure geometry/coordinate/tooltip utilities |

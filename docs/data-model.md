@@ -28,7 +28,7 @@ See [data-pipeline.md](data-pipeline.md) for the complete Bronze → Silver → 
 The API reads live data from SQL Server:
 
 - **Coins**: `DatabaseCoinService` queries `gold.fct_coins` (built by dbt from ingested CoinGecko data), ordered by market cap descending.
-- **Watchlist**: an instance-level `List<WatchlistItem>` managed in memory on the service instance (resets on API restart).
+- **Watchlist**: persisted in `dbo.watchlist` (SQL Server table with a unique constraint on `coin_id`). `GetWatchlist()` joins `gold.fct_coins` with `dbo.watchlist`; add/remove operations issue INSERT/DELETE against the table. Data survives API restarts and container rebuilds.
 - **Mapping**: `MapReaderToCoinDto()` converts `SqlDataReader` columns to `CoinDto`. Controllers and the frontend never see raw SQL types.
 
 ---
@@ -67,7 +67,7 @@ The frontend `Crypto` interface and the API `CoinDto` class share the same shape
 
 - The `WatchlistProvider` in `use-watchlist.tsx` fetches the current watchlist from the API on mount.
 - Add and remove operations call the API, then update local React state to keep the UI responsive.
-- Watchlist state persists across page refreshes because the API maintains it server-side.
+- Watchlist state persists across page refreshes, API restarts, and container rebuilds because it is stored in the `dbo.watchlist` SQL Server table.
 
 ---
 
