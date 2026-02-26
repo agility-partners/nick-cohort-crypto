@@ -26,12 +26,26 @@ parsed as (
         try_cast(try_cast(json_value(e.coin_json, '$.circulating_supply') as float) as decimal(38,8)) as circulating_supply,
         try_cast(json_value(e.coin_json, '$.ath') as decimal(38,8)) as ath,
         try_cast(json_value(e.coin_json, '$.atl') as decimal(38,8)) as atl,
-        e.ingested_at,
-        row_number() over (
-            partition by cast(json_value(e.coin_json, '$.id') as nvarchar(100))
-            order by e.ingested_at desc
-        ) as rn
+        e.ingested_at
     from exploded as e
+),
+validated as (
+    select
+        *
+    from parsed
+    where
+        coin_id is not null
+        and current_price > 0
+        and abs(price_change_percentage_24h) < 1000
+),
+deduped as (
+    select
+        *,
+        row_number() over (
+            partition by coin_id
+            order by ingested_at desc
+        ) as rn
+    from validated
 )
 
 select
@@ -47,5 +61,5 @@ select
     ath,
     atl,
     ingested_at
-from parsed
+from deduped
 where rn = 1

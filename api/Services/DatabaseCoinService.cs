@@ -24,15 +24,15 @@ public class DatabaseCoinService : ICoinService
                 name,
                 symbol,
                 price,
-                change24h,
-                marketCap,
-                volume24h,
+                change_24h,
+                market_cap,
+                volume_24h,
                 image,
-                circulatingSupply,
-                allTimeHigh,
-                allTimeLow
+                circulating_supply,
+                all_time_high,
+                all_time_low
             FROM gold.fct_coins
-            ORDER BY marketCap DESC
+            ORDER BY market_cap DESC
             """;
 
         var result = new List<CoinDto>();
@@ -60,13 +60,13 @@ public class DatabaseCoinService : ICoinService
                 name,
                 symbol,
                 price,
-                change24h,
-                marketCap,
-                volume24h,
+                change_24h,
+                market_cap,
+                volume_24h,
                 image,
-                circulatingSupply,
-                allTimeHigh,
-                allTimeLow
+                circulating_supply,
+                all_time_high,
+                all_time_low
             FROM gold.fct_coins
             WHERE id = @Id
             """;
@@ -167,15 +167,15 @@ public class DatabaseCoinService : ICoinService
             Name = reader.GetString(reader.GetOrdinal("name")),
             Symbol = reader.GetString(reader.GetOrdinal("symbol")),
             Price = GetDecimal(reader, "price"),
-            Change24h = GetDecimal(reader, "change24h"),
-            MarketCap = GetDecimal(reader, "marketCap"),
-            Volume24h = GetDecimal(reader, "volume24h"),
+            Change24h = GetDecimal(reader, "change_24h"),
+            MarketCap = GetDecimal(reader, "market_cap"),
+            Volume24h = GetDecimal(reader, "volume_24h"),
             Image = reader.IsDBNull(reader.GetOrdinal("image"))
                 ? string.Empty
                 : reader.GetString(reader.GetOrdinal("image")),
-            CirculatingSupply = GetDecimal(reader, "circulatingSupply"),
-            AllTimeHigh = GetDecimal(reader, "allTimeHigh"),
-            AllTimeLow = GetDecimal(reader, "allTimeLow"),
+            CirculatingSupply = GetDecimal(reader, "circulating_supply"),
+            AllTimeHigh = GetDecimal(reader, "all_time_high"),
+            AllTimeLow = GetDecimal(reader, "all_time_low"),
         };
     }
 

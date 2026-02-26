@@ -15,17 +15,59 @@ models:
         description: "Ticker symbol"
       - name: price
         description: "Current price in USD"
-      - name: change24h
+      - name: change_24h
         description: "24-hour percentage change"
-      - name: marketCap
+      - name: market_cap
         description: "Market capitalization in USD"
-      - name: volume24h
+      - name: volume_24h
         description: "24-hour trading volume in USD"
       - name: image
         description: "Coin image URL"
-      - name: circulatingSupply
+      - name: circulating_supply
         description: "Current circulating supply"
-      - name: allTimeHigh
+      - name: all_time_high
         description: "All-time high price"
-      - name: allTimeLow
+      - name: all_time_low
         description: "All-time low price"
+      - name: price_trend
+        description: "Categorized 24-hour price trend based on change24h thresholds"
+      - name: market_dominance_pct
+        description: "Coin market cap as a percentage of total market cap across all coins"
+
+  - name: market_summary
+    description: "Single-row gold summary metrics derived from fct_coins"
+    columns:
+      - name: total_coins
+        description: "Total number of coins in fct_coins"
+      - name: total_market_cap
+        description: "Sum of market capitalization across all coins"
+      - name: total_24h_volume
+        description: "Sum of 24-hour trading volume across all coins"
+      - name: avg_24h_change_pct
+        description: "Average 24-hour percentage change across all coins"
+      - name: coins_up
+        description: "Count of coins with positive 24-hour change"
+      - name: coins_down
+        description: "Count of coins with negative 24-hour change"
+      - name: btc_dominance_pct
+        description: "Bitcoin market dominance percentage from fct_coins"
+
+  - name: top_movers
+    description: "Top 10 gainers and top 10 losers by 24-hour percentage change"
+    columns:
+      - name: id
+        description: "Coin identifier"
+      - name: symbol
+        description: "Ticker symbol"
+      - name: name
+        description: "Display name of the coin"
+      - name: price
+        description: "Current price in USD"
+      - name: market_cap
+        description: "Market capitalization in USD"
+      - name: change_24h
+        description: "24-hour percentage change"
+      - name: category
+        description: "Mover category: gainer or loser"
+      - name: rank
+        description: "Rank within each category based on change24h"
