@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: fct_coins
+    description: "Gold fact table shaped to CoinDto fields from silver staging data"
+    columns:
+      - name: id
+        description: "Coin identifier from CoinGecko"
+        data_tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Display name of the coin"
+      - name: symbol
+        description: "Ticker symbol"
+      - name: price
+        description: "Current price in USD"
+      - name: change24h
+        description: "24-hour percentage change"
+      - name: marketCap
+        description: "Market capitalization in USD"
+      - name: volume24h
+        description: "24-hour trading volume in USD"
+      - name: image
+        description: "Coin image URL"
+      - name: circulatingSupply
+        description: "Current circulating supply"
+      - name: allTimeHigh
+        description: "All-time high price"
+      - name: allTimeLow
+        description: "All-time low price"
