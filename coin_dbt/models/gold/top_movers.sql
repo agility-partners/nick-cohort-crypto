@@ -32,8 +32,8 @@ select
     symbol,
     name,
     price,
-    marketCap,
-    change24h,
+    market_cap,
+    change_24h,
     category,
     rank
 from gainers
@@ -46,8 +46,8 @@ select
     symbol,
     name,
     price,
-    marketCap,
-    change24h,
+    market_cap,
+    change_24h,
     category,
     rank
 from losers

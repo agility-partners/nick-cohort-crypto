@@ -7,6 +7,8 @@ services:
       - "5000:5000"
     depends_on:
       - sqlserver
+    environment:
+      ConnectionStrings__CoinSightDb: "Server=sqlserver,1433;Database=CoinSightDB;User Id=SA;Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;"
     networks:
       - app-net
 

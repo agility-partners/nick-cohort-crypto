@@ -77,9 +77,11 @@ export function toChartPoints(
   width: number,
   height: number,
   padding: number,
+  overrideMin?: number,
+  overrideMax?: number,
 ): ChartPoint[] {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const min = overrideMin ?? Math.min(...values);
+  const max = overrideMax ?? Math.max(...values);
   const range = max - min || 1;
   const innerW = width - padding * 2;
   const innerH = height - padding * 2;
@@ -108,8 +110,12 @@ export function computeLineGeometry(
   values: number[],
   geo: ChartGeometry,
   isCandlestick: boolean,
+  overrideMin?: number,
+  overrideMax?: number,
 ): LineGeometry {
-  const points = !isCandlestick ? toChartPoints(values, geo.width, geo.height, geo.padding) : [];
+  const points = !isCandlestick
+    ? toChartPoints(values, geo.width, geo.height, geo.padding, overrideMin, overrideMax)
+    : [];
   const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(" ");
   const first = points[0];
   const last = points[points.length - 1];

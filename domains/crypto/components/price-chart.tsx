@@ -24,6 +24,8 @@ interface PriceChartProps {
   chartType?: "line" | "candlestick";
   ohlcData?: OHLCDataPoint[];
   timeRangeLabel?: string;
+  allTimeHigh?: number;
+  allTimeLow?: number;
 }
 
 /* ── Component ── */
@@ -35,6 +37,8 @@ export default function PriceChart({
   chartType = "line",
   ohlcData,
   timeRangeLabel,
+  allTimeHigh,
+  allTimeLow,
 }: PriceChartProps) {
   const geo = getChartGeometry();
   const { width, height, padding, innerH } = geo;
@@ -52,13 +56,17 @@ export default function PriceChart({
       : "text-[var(--positive)]";
 
   const { high, low, priceRange } = getHighLow(!!isCandlestick, values, ohlcData);
-  const { points, polylinePoints, areaPath } = computeLineGeometry(values, geo, !!isCandlestick);
+  const displayHigh = allTimeHigh ?? high;
+  const displayLow = allTimeLow ?? low;
+  const yLow = allTimeLow ?? low;
+  const yRange = (allTimeHigh != null && allTimeLow != null) ? allTimeHigh - allTimeLow || 1 : priceRange;
+  const { points, polylinePoints, areaPath } = computeLineGeometry(values, geo, !!isCandlestick, allTimeLow, allTimeHigh);
   const { candleStep, bodyWidth, scaleY } = computeCandleGeometry(
     !!isCandlestick,
     ohlcData,
     geo,
-    low,
-    priceRange,
+    yLow,
+    yRange,
   );
   const { tooltipX, tooltipY, ttW, ttH } = computeTooltip(
     !!isCandlestick,
@@ -113,8 +121,8 @@ export default function PriceChart({
           <p className="mt-1 text-xs text-[var(--text-muted)]">{subtitle}</p>
         </div>
         <div className="text-right text-xs text-[var(--text-secondary)]">
-          <p>High: {formatPrice(high)}</p>
-          <p>Low: {formatPrice(low)}</p>
+          <p>High: {formatPrice(displayHigh)}</p>
+          <p>Low: {formatPrice(displayLow)}</p>
         </div>
       </div>
 

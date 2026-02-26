@@ -4,11 +4,10 @@ import { useMemo, useState } from "react";
 
 import CryptoDetailWatchlistToggle from "@/domains/crypto/components/crypto-detail-watchlist-toggle";
 import PriceChart from "./price-chart";
-import type { TimeRange, ChartType } from "@/domains/crypto/types/crypto.types";
-import { TIME_RANGES, RANGE_LABELS } from "./chart-config";
-import { generateMockData } from "./generate-mock-chart-data";
+import type { ChartType } from "@/domains/crypto/types/crypto.types";
+import { generateAllTimeData } from "./generate-mock-chart-data";
 
-export type { TimeRange, ChartType };
+export type { ChartType };
 
 /* ── Props ── */
 
@@ -17,18 +16,22 @@ interface ChartSectionProps {
   symbol: string;
   price: number;
   change24h: number;
+  allTimeHigh?: number;
+  allTimeLow?: number;
 }
 
 /* ── Component ── */
 
-export default function ChartSection({ cryptoId, symbol, price, change24h }: ChartSectionProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>("7D");
+export default function ChartSection({ cryptoId, symbol, price, change24h, allTimeHigh, allTimeLow }: ChartSectionProps) {
   const [chartType, setChartType] = useState<ChartType>("line");
 
-  const { values, labels, ohlcData } = useMemo(
-    () => generateMockData(cryptoId, price, change24h, timeRange),
-    [cryptoId, price, change24h, timeRange],
-  );
+  const { values, labels, ohlcData } = useMemo(() => {
+    if (allTimeHigh != null && allTimeLow != null) {
+      return generateAllTimeData(cryptoId, price, allTimeHigh, allTimeLow);
+    }
+    // Fallback: flat line at current price if ATH/ATL unavailable
+    return { values: [price, price], labels: ["", ""], ohlcData: [] };
+  }, [cryptoId, price, change24h, allTimeHigh, allTimeLow]);
 
   return (
     <div>
@@ -37,24 +40,7 @@ export default function ChartSection({ cryptoId, symbol, price, change24h }: Cha
       </div>
 
       {/* ── Controls row ── */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        {/* Time-range selector */}
-        <div className="flex gap-1 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-1">
-          {TIME_RANGES.map((range) => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                timeRange === range
-                  ? "bg-[var(--accent)]/20 text-[var(--accent)] shadow-sm"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--badge-bg)]"
-              }`}
-            >
-              {range}
-            </button>
-          ))}
-        </div>
-
+      <div className="mb-3 flex justify-end">
         {/* Chart-type toggle */}
         <div className="flex gap-1 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-1">
           <button
@@ -104,7 +90,9 @@ export default function ChartSection({ cryptoId, symbol, price, change24h }: Cha
         symbol={symbol}
         chartType={chartType}
         ohlcData={ohlcData}
-        timeRangeLabel={`Mock ${RANGE_LABELS[timeRange]} trend`}
+        timeRangeLabel="All time trend"
+        allTimeHigh={allTimeHigh}
+        allTimeLow={allTimeLow}
       />
     </div>
   );

@@ -162,7 +162,7 @@ The API has two `ICoinService` implementations registered in `Program.cs`:
 
 **`DatabaseCoinService`** (active in production / Docker):
 - Queries `gold.fct_coins` via `SqlConnection` using `Microsoft.Data.SqlClient`
-- Connection string comes from `appsettings.json` → `ConnectionStrings:CoinSightDb`
+- Connection string is injected via the `ConnectionStrings__CoinSightDb` environment variable in `docker-compose.yml`; locally it comes from `appsettings.Development.json`
 - Returns live data ingested by the Python service and transformed by dbt
 - Watchlist is kept in-memory (`List<WatchlistItem>`) on the service instance
 

@@ -145,6 +145,8 @@ export default async function CryptoDetailPage({ params }: CryptoDetailPageProps
               symbol={crypto.symbol}
               price={crypto.price}
               change24h={crypto.change24h}
+              allTimeHigh={crypto.allTimeHigh}
+              allTimeLow={crypto.allTimeLow}
             />
             <div className="mt-4">
               <Link
