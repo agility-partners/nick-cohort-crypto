@@ -28,3 +28,14 @@ BEGIN
     );
 END;
 GO
+
+IF OBJECT_ID('dbo.watchlist', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.watchlist (
+        id UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+        coin_id NVARCHAR(100) NOT NULL,
+        added_at DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+        CONSTRAINT UQ_watchlist_coin_id UNIQUE (coin_id)
+    );
+END;
+GO

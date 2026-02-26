@@ -1,5 +1,4 @@
 using CryptoApi.DTOs;
-using CryptoApi.Models;
 using Microsoft.Data.SqlClient;
 
 namespace CryptoApi.Services;
@@ -8,7 +7,6 @@ public class DatabaseCoinService : ICoinService
 {
     private readonly ILogger<DatabaseCoinService> _logger;
     private readonly string _connectionString;
-    private readonly List<WatchlistItem> _watchlist = [];
 
     public DatabaseCoinService(ILogger<DatabaseCoinService> logger, IConfiguration configuration)
     {
@@ -92,16 +90,38 @@ public class DatabaseCoinService : ICoinService
 
     public async Task<IReadOnlyList<CoinDto>> GetWatchlist()
     {
-        var watchlistCoinIds = _watchlist
-            .Select(item => item.CoinId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        const string query = """
+            SELECT
+                c.id,
+                c.name,
+                c.symbol,
+                c.price,
+                c.change_24h,
+                c.market_cap,
+                c.volume_24h,
+                c.image,
+                c.circulating_supply,
+                c.all_time_high,
+                c.all_time_low
+            FROM gold.fct_coins c
+            INNER JOIN dbo.watchlist w ON c.id = w.coin_id
+            ORDER BY w.added_at DESC
+            """;
 
-        var allCoins = await GetAllCoins();
-        var result = allCoins
-            .Where(coin => watchlistCoinIds.Contains(coin.Id))
-            .ToList();
+        var result = new List<CoinDto>();
 
-        _logger.LogInformation("Fetched watchlist. Total: {WatchlistCount}", result.Count);
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(query, connection);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            result.Add(MapReaderToCoinDto(reader));
+        }
+
+        _logger.LogInformation("Fetched watchlist from database. Total: {WatchlistCount}", result.Count);
         return result;
     }
 
@@ -115,10 +135,17 @@ public class DatabaseCoinService : ICoinService
             return null;
         }
 
-        var existsInWatchlist = _watchlist.Any(item =>
-            string.Equals(item.CoinId, coinId, StringComparison.OrdinalIgnoreCase));
+        const string checkQuery = "SELECT COUNT(1) FROM dbo.watchlist WHERE coin_id = @CoinId";
+        const string insertQuery = "INSERT INTO dbo.watchlist (id, coin_id, added_at) VALUES (@Id, @CoinId, @AddedAt)";
 
-        if (existsInWatchlist)
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var checkCommand = new SqlCommand(checkQuery, connection);
+        checkCommand.Parameters.AddWithValue("@CoinId", coinId);
+        var exists = (int)await checkCommand.ExecuteScalarAsync() > 0;
+
+        if (exists)
         {
             _logger.LogWarning("Add to watchlist conflict — already exists: {CoinId}", coinId);
             return new AddToWatchlistResult
@@ -128,14 +155,13 @@ public class DatabaseCoinService : ICoinService
             };
         }
 
-        _watchlist.Add(new WatchlistItem
-        {
-            Id = Guid.NewGuid(),
-            CoinId = coin.Id,
-            AddedAt = DateTime.UtcNow,
-        });
+        await using var insertCommand = new SqlCommand(insertQuery, connection);
+        insertCommand.Parameters.AddWithValue("@Id", Guid.NewGuid());
+        insertCommand.Parameters.AddWithValue("@CoinId", coinId);
+        insertCommand.Parameters.AddWithValue("@AddedAt", DateTime.UtcNow);
+        await insertCommand.ExecuteNonQueryAsync();
 
-        _logger.LogInformation("Coin added to watchlist: {CoinId}", coinId);
+        _logger.LogInformation("Coin added to watchlist in database: {CoinId}", coinId);
         return new AddToWatchlistResult
         {
             IsConflict = false,
@@ -143,20 +169,25 @@ public class DatabaseCoinService : ICoinService
         };
     }
 
-    public Task<bool> RemoveFromWatchlist(string coinId)
+    public async Task<bool> RemoveFromWatchlist(string coinId)
     {
-        var watchlistItem = _watchlist.FirstOrDefault(item =>
-            string.Equals(item.CoinId, coinId, StringComparison.OrdinalIgnoreCase));
+        const string query = "DELETE FROM dbo.watchlist WHERE coin_id = @CoinId";
 
-        if (watchlistItem is null)
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@CoinId", coinId);
+        var rowsAffected = await command.ExecuteNonQueryAsync();
+
+        if (rowsAffected == 0)
         {
             _logger.LogWarning("Remove from watchlist failed — not found: {CoinId}", coinId);
-            return Task.FromResult(false);
+            return false;
         }
 
-        _watchlist.Remove(watchlistItem);
-        _logger.LogInformation("Coin removed from watchlist: {CoinId}", coinId);
-        return Task.FromResult(true);
+        _logger.LogInformation("Coin removed from watchlist in database: {CoinId}", coinId);
+        return true;
     }
 
     private static CoinDto MapReaderToCoinDto(SqlDataReader reader)
