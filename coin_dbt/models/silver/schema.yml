@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_coins
+    description: "Latest per-coin staging view parsed from bronze raw CoinGecko payloads"
+    columns:
+      - name: coin_id
+        description: "CoinGecko coin identifier"
+        data_tests:
+          - not_null
+          - unique
+      - name: name
+        description: "Display name of the coin"
+      - name: symbol
+        description: "Ticker symbol of the coin"
+      - name: current_price
+        description: "Current coin price in USD"
+      - name: market_cap
+        description: "Market capitalization in USD"
+      - name: total_volume
+        description: "24h trading volume in USD"
+      - name: price_change_percentage_24h
+        description: "24h percentage price change"
+      - name: image_url
+        description: "Coin image URL"
+      - name: circulating_supply
+        description: "Circulating supply"
+      - name: ath
+        description: "All-time high price"
+      - name: atl
+        description: "All-time low price"
+      - name: ingested_at
+        description: "Ingestion timestamp from bronze layer"
