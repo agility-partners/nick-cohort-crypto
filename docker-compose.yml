@@ -22,6 +22,19 @@ services:
     networks:
       - app-net
 
+  ingest:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile.ingest
+    depends_on:
+      - sqlserver
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      DOCKER_ENV: "true"
+    restart: unless-stopped
+    networks:
+      - app-net
+
   frontend:
     build:
       context: .

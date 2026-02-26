@@ -20,9 +20,10 @@ DB_USER = os.getenv("COINSIGHT_DB_USER", "SA")
 DB_PASSWORD = os.getenv("COINSIGHT_DB_PASSWORD") or os.getenv("SA_PASSWORD")
 DB_ENCRYPT = os.getenv("COINSIGHT_DB_ENCRYPT", "yes")
 DB_TRUST_CERT = os.getenv("COINSIGHT_DB_TRUST_CERT", "yes")
-SERVER_CANDIDATES = os.getenv(
-    "COINSIGHT_DB_SERVERS", "localhost,1433;127.0.0.1,1433"
-).split(";")
+_default_servers = (
+    "sqlserver,1433" if os.getenv("DOCKER_ENV") else "localhost,1433;127.0.0.1,1433"
+)
+SERVER_CANDIDATES = os.getenv("COINSIGHT_DB_SERVERS", _default_servers).split(";")
 
 
 def fetch_coin_market_data() -> list[dict]:
