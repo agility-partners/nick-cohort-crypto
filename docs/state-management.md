@@ -60,7 +60,7 @@ Local React state is kept in sync with the API to ensure the UI updates immediat
 1. `app/crypto/[id]/page.tsx` is a **server component** with `export const dynamic = "force-dynamic"`.
 2. It calls `fetchCoinById(id)` from `crypto-api.ts`, which fetches from the .NET API.
 3. If not found → `notFound()` renders `not-found.tsx` with a link home.
-4. If found → renders coin header, market metric cards, and `ChartSection` (client component) with `cryptoId`, `symbol`, `price`, and `change24h` as props.
+4. If found → renders coin header, six market metric cards (Market Cap, 24h Volume, 24h Change, Circulating Supply, All-Time High, All-Time Low), `ChartSection` (client component) with `cryptoId`, `symbol`, `price`, `change24h`, `allTimeHigh`, and `allTimeLow` as props, and a "Compare with another coin" link.
 
 ---
 

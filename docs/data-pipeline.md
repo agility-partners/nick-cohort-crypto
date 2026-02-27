@@ -45,7 +45,8 @@ The ingestion script calls the CoinGecko `/coins/markets` endpoint (top 50 coins
 | Column | Type | Description |
 | --- | --- | --- |
 | `id` | int (identity) | Auto-incremented primary key |
-| `ingested_at` | datetime2 | UTC timestamp of the insert (default: `SYSUTCDATETIME()`) |
+| `ingested_at` | datetime2 | UTC timestamp of the insert (default: `GETUTCDATE()`) |
+| `source_api` | nvarchar(100) | API source identifier (default: `'coingecko'`) |
 | `raw_json` | nvarchar(max) | Full CoinGecko JSON array for all 50 coins |
 | `coin_count` | int | Number of coins in the payload (for quick auditing) |
 
@@ -188,7 +189,8 @@ coin_dbt/
       market_summary.sql    ← view: aggregate market metrics
       top_movers.sql        ← view: top 10 gainers + losers
       schema.yml            ← column docs + data tests
-  sources.yml               ← declares bronze.raw_coin_market as a source
+    bronze/
+      bronze-sources.yml    ← declares bronze.raw_coin_market as a source
 ```
 
 ---

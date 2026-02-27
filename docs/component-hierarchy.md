@@ -55,15 +55,16 @@ AddToWatchlistPage
 ## Detail Page (`app/crypto/[id]/page.tsx`)
 
 ```
-CryptoDetailPage               (server component, force-dynamic, fetches from API)
+CryptoDetailPage               (server component, force-dynamic, fetches from API + generateMetadata for SEO)
   → Back link
   → Coin header + PriceDisplay (size="lg")
-  → Market metric cards (Market Cap, 24h Volume, 24h Change)
-  → ChartSection               (client component)
+  → Market metric cards (Market Cap, 24h Volume, 24h Change, Circulating Supply, All-Time High, All-Time Low)
+  → ChartSection               (client component, receives allTimeHigh + allTimeLow)
       → Watchlist toggle        (add/remove star button)
       → Chart-type toggle       (Line / Candle)
       → PriceChart              (interactive SVG)
           → ChartGrid           (axis lines + labels)
           → LineChartLayer       (polyline + gradient fill)
           → CandlestickLayer    (OHLC wicks + bodies)
+  → "Compare with another coin" link
 ```

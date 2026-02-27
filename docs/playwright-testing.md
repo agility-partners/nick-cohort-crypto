@@ -78,13 +78,12 @@ Validates add-to-watchlist user flow:
 
 Validates crypto detail route and chart interactions:
 
-- Navigate from card to `/crypto/bitcoin`
+- Navigate from first available card to `/crypto/{id}`
 - Detail header + chart render correctly
-- Time range control updates chart subtitle
 - Chart type toggles between line and candle
+- Time range buttons update chart subtitle (1D, 7D, 30D, 90D, 1Y, ALL)
 - Back navigation returns to home
 - Unknown coin route shows segment-level not-found UI
-- All time ranges are covered (`1D`, `7D`, `30D`, `90D`, `1Y`, `ALL`)
 
 ### 4) `e2e/state-resilience.spec.ts`
 
@@ -192,7 +191,6 @@ Current suite is strong on core flows but does not yet include:
 - Keyboard-only accessibility journeys
 - Multi-browser matrix beyond Chromium/Chrome in routine runs
 - CI pipeline enforcement (recommended next)
-- API integration tests (xUnit) independent of the frontend
 
 ---
 
@@ -202,4 +200,3 @@ Current suite is strong on core flows but does not yet include:
 2. Add accessibility-focused keyboard navigation tests
 3. Add baseline visual snapshots for core pages
 4. Add WebKit project for broader browser confidence
-5. Add xUnit integration tests for the .NET API endpoints

@@ -35,7 +35,7 @@ Key decisions made in CoinSight and the reasoning behind them.
 | **Correct HTTP status codes** | 200 (success), 201 with `CreatedAtAction` (created), 204 (deleted), 400 (validation), 404 (not found), 409 (duplicate watchlist entry). |
 | **RESTful route naming** | Nouns, plural: `/api/coins`, `/api/watchlist`. No verbs in routes. |
 | **Centralized error handling** | Custom `ErrorHandlingMiddleware` catches unhandled exceptions and returns consistent JSON with a `requestId` for correlation. In Development, includes exception details; in Production, generic message only. Runs first in the pipeline so it wraps everything downstream. |
-| **Built-in logging only** | Uses ASP.NET Core's `ILogger<T>` — no external packages (Serilog, NLog). `CoinService` logs business operations at Information/Warning level; middleware logs exceptions at Error level. Structured log parameters (e.g., `{CoinId}`) for machine-readable output. |
+| **Built-in logging only** | Uses ASP.NET Core's `ILogger<T>` — no external packages (Serilog, NLog). Both `CoinService` and `DatabaseCoinService` log business operations at Information/Warning level; middleware logs exceptions at Error level. Structured log parameters (e.g., `{CoinId}`) for machine-readable output. |
 | **Integration tests over unit tests** | Tests use `WebApplicationFactory<Program>` to spin up the full API in-memory. This tests the real middleware pipeline, routing, DI, and serialization — catching issues that isolated unit tests would miss. |
 | **Custom test factory for stateful tests** | `CoinSightApiFactory` re-registers `CoinService` as Singleton so watchlist state persists across requests within a single test. Production stays Scoped. Each test creates its own factory for isolation. |
 | **`public partial class Program`** | Top-level statements generate an implicit `Program` class that's `internal` by default. The `partial` declaration makes it `public` so the test project can reference it via `WebApplicationFactory<Program>`. |
@@ -45,6 +45,6 @@ Key decisions made in CoinSight and the reasoning behind them.
 | Decision | Detail |
 | --- | --- |
 | **Multi-stage builds** | Both Dockerfiles use multi-stage builds to separate build tools from runtime images. Reduces image size and attack surface. |
-| **Docker Compose orchestration** | A single `docker-compose.yml` runs both services on a shared bridge network. The frontend reaches the API by service name (`http://api:5000`). |
+| **Docker Compose orchestration** | A single `docker-compose.yml` runs all four services (sqlserver, ingest, api, frontend) on a shared bridge network. Services resolve each other by name (e.g., `http://api:5000`). |
 | **Standalone Next.js output** | `next.config.ts` sets `output: "standalone"` to produce a self-contained `server.js` that runs without `node_modules`. |
 | **Build arg + env var for API URL** | `NEXT_PUBLIC_API_URL` is passed as both a Docker build arg (baked into the JS bundle at build time) and a runtime env var (for server-side rendering). |

@@ -85,12 +85,13 @@ The container runs forever: it executes `ingest_coins.py` on startup, logs the t
 ```yaml
 services:
   sqlserver:
-    image: mcr.microsoft.com/azure-sql-edge
+    image: mcr.microsoft.com/azure-sql-edge:latest
     ports: "1433:1433"
     environment:
       SA_PASSWORD: ${SA_PASSWORD}
       ACCEPT_EULA: ${ACCEPT_EULA:-Y}
     volumes: sqlserver-data:/var/opt/mssql
+    networks: [app-net]
 
   ingest:
     build:
@@ -101,11 +102,15 @@ services:
       SA_PASSWORD: ${SA_PASSWORD}
       DOCKER_ENV: "true"
     restart: unless-stopped
+    networks: [app-net]
 
   api:
     build: ./api
     ports: "5000:5000"
     depends_on: [sqlserver]
+    environment:
+      ConnectionStrings__CoinSightDb: "Server=sqlserver,1433;Database=CoinSightDB;User Id=SA;Password=${SA_PASSWORD};..."
+    networks: [app-net]
 
   frontend:
     build:
@@ -116,16 +121,22 @@ services:
       NEXT_PUBLIC_API_URL: http://api:5000
     ports: "3000:3000"
     depends_on: [api]
+    networks: [app-net]
 
 networks:
-  app-net: bridge
+  app-net:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
 ```
 
 Key details:
 
 - All services share the `app-net` bridge network and resolve each other by service name.
 - `DOCKER_ENV=true` tells `ingest_coins.py` to connect to `sqlserver,1433` instead of `localhost`.
-- `SA_PASSWORD` is forwarded from the host `.env` file to both `sqlserver` and `ingest`.
+- `SA_PASSWORD` is forwarded from the host `.env` file to `sqlserver`, `ingest`, and `api` (via the connection string).
+- `ConnectionStrings__CoinSightDb` tells the API to use `DatabaseCoinService` (live SQL) instead of the in-memory fallback.
 - `NEXT_PUBLIC_API_URL` is passed as both a build arg (baked into the Next.js JS bundle) and a runtime env var (for SSR requests).
 - `depends_on` controls start order but does not wait for services to be ready.
 
@@ -136,7 +147,7 @@ Key details:
 Inside `app-net`, containers resolve each other by service name:
 
 - `ingest` connects to SQL Server at `sqlserver,1433`
-- `api` connects to SQL Server at `Server=sqlserver,1433` (via connection string in `appsettings.json`)
+- `api` connects to SQL Server at `Server=sqlserver,1433` (via `ConnectionStrings__CoinSightDb` environment variable in `docker-compose.yml`)
 - `frontend` reaches the API at `http://api:5000`
 
 From the host machine, services are accessible through their published port mappings:

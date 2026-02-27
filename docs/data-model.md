@@ -79,7 +79,7 @@ The original `mockCryptos` array in `domains/crypto/mock/cryptos.mock.ts` is sti
 
 ## Chart Data Generation
 
-Chart data is derived deterministically from coin properties + time range via a seeded PRNG in `generate-mock-chart-data.ts`. See [chart-system.md](chart-system.md) for full details.
+On the detail page, chart data is derived deterministically from the coin's `id`, `price`, `allTimeHigh`, and `allTimeLow` via `generateAllTimeData()` in `generate-mock-chart-data.ts`. The compare chart uses `generateMockData()` with time-range-specific point counts. See [chart-system.md](chart-system.md) for full details.
 
 ---
 

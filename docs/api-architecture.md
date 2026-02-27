@@ -69,7 +69,7 @@ HTTP Request
   → Middleware Pipeline (Error handling → HTTPS redirect → CORS → Routing)
     → Controller (HTTP concerns only: status codes, ActionResult)
       → Service Interface (ICoinService — business logic contract)
-        → Service Implementation (CoinService — data access + mapping + logging)
+        → Service Implementation (CoinService or DatabaseCoinService — data access + mapping + logging)
           → Models (internal domain objects)
           → DTOs (external API contracts)
 ```
@@ -141,7 +141,7 @@ This ensures clients always receive JSON (never HTML stack traces) and that ever
 
 The API uses ASP.NET Core's built-in `ILogger<T>` — no external packages.
 
-**Service layer** (`CoinService`): logs all business operations via `ILogger<CoinService>`:
+**Service layer**: Both `CoinService` and `DatabaseCoinService` log business operations via `ILogger<T>`:
 
 | Operation | Level | Example |
 | --- | --- | --- |

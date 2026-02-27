@@ -18,7 +18,7 @@ ChartSection (state owner)
 
 ## ChartSection — State & Data
 
-`domains/crypto/components/chart-section.tsx` owns one piece of state:
+`domains/crypto/components/chart-section.tsx` receives `cryptoId`, `symbol`, `price`, `change24h`, `allTimeHigh`, and `allTimeLow` as props and owns one piece of state:
 - `chartType` (default `"line"`) — line or candlestick mode
 
 The chart always displays an all-time trend derived from the coin's current price, all-time high, and all-time low. When props change, `useMemo` calls `generateAllTimeData()` from `generate-mock-chart-data.ts`:

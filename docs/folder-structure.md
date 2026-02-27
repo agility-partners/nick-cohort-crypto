@@ -1,6 +1,6 @@
 # Folder Structure
 
-The codebase follows a **domain-based folder architecture** with strict separation of concerns. The project is split into a Next.js frontend and a .NET 8 API backend.
+The codebase follows a **domain-based folder architecture** with strict separation of concerns. The project is split into a Next.js frontend, a .NET 8 API backend, a Python ingestion service, and a dbt transformation layer — all orchestrated by Docker Compose.
 
 ---
 
@@ -89,10 +89,37 @@ shared/                           ← Cross-cutting reusable components
     coin-sight-logo.tsx           ← SVG brand logo
 
 scripts/
+  ingest_coins.py                ← CoinGecko → bronze.raw_coin_market ingestion
+  init-db.sql                    ← Creates CoinSightDB, Bronze schema, and watchlist table
+  Dockerfile.ingest              ← python:3.12-slim + ODBC Driver 18 + loop entrypoint
+  requirements.txt               ← Python dependencies (requests, pyodbc)
   full-stack-smoke.mjs           ← End-to-end smoke test (API + browser)
 
+coin_dbt/                         ← dbt transformation project
+  dbt_project.yml                ← Project config (profile: coin_dbt)
+  models/
+    bronze/
+      bronze-sources.yml         ← Declares bronze.raw_coin_market as a source
+    silver/
+      stg_coins.sql              ← View: parse + validate + deduplicate Bronze JSON
+      schema.yml                 ← Column docs + data tests
+    gold/
+      fct_coins.sql              ← Table: business-ready coin rows
+      market_summary.sql         ← View: aggregate market metrics
+      top_movers.sql             ← View: top 10 gainers + losers
+      schema.yml                 ← Column docs + data tests
+
+e2e/                              ← Playwright E2E tests
+  home-navigation.spec.ts        ← Home page tabs, sort, search tests
+  watchlist-flow.spec.ts         ← Add/remove watchlist tests
+  crypto-detail.spec.ts          ← Detail page and chart interaction tests
+  state-resilience.spec.ts       ← State persistence tests
+  utils/test-logging.ts          ← E2E logging utilities
+
+docs/                             ← Architecture and implementation documentation
+
 Dockerfile                        ← Frontend multi-stage build (deps → build → standalone)
-docker-compose.yml                ← Orchestrates frontend + API services
+docker-compose.yml                ← Orchestrates all 4 services (sqlserver, ingest, api, frontend)
 ```
 
 ---
