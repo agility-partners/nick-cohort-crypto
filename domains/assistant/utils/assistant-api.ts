@@ -1,7 +1,10 @@
 import "server-only";
 
 import {
+  API_COIN_BY_SYMBOL_PATH,
   API_COINS_PATH,
+  API_MARKET_SUMMARY_PATH,
+  API_MOVERS_PATH,
   API_TIMEOUT_MS,
   DEFAULT_TOP_MOVERS_LIMIT,
   MAX_SELECTED_SYMBOLS,
@@ -98,72 +101,131 @@ export async function getCoinBySymbol(
     return createToolError(TOOL_ERROR_CODE.INVALID_INPUT, "Symbol is required.");
   }
 
-  const coins = await fetchCoins();
-  if (!Array.isArray(coins)) {
-    return coins;
-  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, API_TIMEOUT_MS);
 
-  const matchingCoin = coins.find((coin) => coin.symbol.toLowerCase() === trimmedSymbol);
-  if (!matchingCoin) {
-    return createToolError(TOOL_ERROR_CODE.NOT_FOUND, `No coin found for symbol: ${symbol}.`);
-  }
+  try {
+    const url = `${getServerApiBaseUrl()}${API_COIN_BY_SYMBOL_PATH}/${encodeURIComponent(trimmedSymbol)}`;
+    const response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal,
+    });
 
-  return {
-    coin: matchingCoin,
-    source: API_COINS_PATH,
-    asOf: new Date().toISOString(),
-  };
+    if (response.status === 404) {
+      return createToolError(TOOL_ERROR_CODE.NOT_FOUND, `No coin found for symbol: ${symbol}.`);
+    }
+
+    if (!response.ok) {
+      return createToolError(
+        TOOL_ERROR_CODE.UPSTREAM_ERROR,
+        "Coin data source is currently unavailable.",
+      );
+    }
+
+    const coin = (await response.json()) as Crypto;
+    return {
+      coin,
+      source: `${API_COIN_BY_SYMBOL_PATH}/${trimmedSymbol}`,
+      asOf: new Date().toISOString(),
+    };
+  } catch {
+    return createToolError(
+      TOOL_ERROR_CODE.UPSTREAM_ERROR,
+      "Coin data source request failed or timed out.",
+    );
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function getTopMovers(
   requestedLimit: number,
 ): Promise<TopMoversResult | ToolErrorResult> {
   const limit = Math.min(Math.max(requestedLimit, 1), MAX_TOP_MOVERS_LIMIT);
-  const coins = await fetchCoins();
-  if (!Array.isArray(coins)) {
-    return coins;
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${getServerApiBaseUrl()}${API_MOVERS_PATH}?limit=${limit}`,
+      { method: "GET", cache: "no-store", signal: controller.signal },
+    );
+
+    if (!response.ok) {
+      return createToolError(
+        TOOL_ERROR_CODE.UPSTREAM_ERROR,
+        "Top movers data is currently unavailable.",
+      );
+    }
+
+    const data = (await response.json()) as { gainers: Crypto[]; losers: Crypto[] };
+    return {
+      gainers: data.gainers,
+      losers: data.losers,
+      source: API_MOVERS_PATH,
+      asOf: new Date().toISOString(),
+    };
+  } catch {
+    return createToolError(
+      TOOL_ERROR_CODE.UPSTREAM_ERROR,
+      "Top movers request failed or timed out.",
+    );
+  } finally {
+    clearTimeout(timer);
   }
-
-  const byGainers = [...coins].sort((a, b) => b.change24h - a.change24h).slice(0, limit);
-  const byLosers = [...coins].sort((a, b) => a.change24h - b.change24h).slice(0, limit);
-
-  return {
-    gainers: byGainers,
-    losers: byLosers,
-    source: API_COINS_PATH,
-    asOf: new Date().toISOString(),
-  };
 }
 
 export async function getMarketSummary(): Promise<MarketSummaryResult | ToolErrorResult> {
-  const coins = await fetchCoins();
-  if (!Array.isArray(coins)) {
-    return coins;
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${getServerApiBaseUrl()}${API_MARKET_SUMMARY_PATH}`,
+      { method: "GET", cache: "no-store", signal: controller.signal },
+    );
+
+    if (!response.ok) {
+      return createToolError(
+        TOOL_ERROR_CODE.UPSTREAM_ERROR,
+        "Market summary data is currently unavailable.",
+      );
+    }
+
+    const data = (await response.json()) as {
+      totalMarketCap: number;
+      totalVolume24h: number;
+      advancers: number;
+      decliners: number;
+      unchanged: number;
+      bitcoinDominance: number | null;
+    };
+
+    return {
+      totalMarketCap: data.totalMarketCap,
+      totalVolume24h: data.totalVolume24h,
+      advancers: data.advancers,
+      decliners: data.decliners,
+      unchanged: data.unchanged,
+      bitcoinDominance: data.bitcoinDominance,
+      source: API_MARKET_SUMMARY_PATH,
+      asOf: new Date().toISOString(),
+    };
+  } catch {
+    return createToolError(
+      TOOL_ERROR_CODE.UPSTREAM_ERROR,
+      "Market summary request failed or timed out.",
+    );
+  } finally {
+    clearTimeout(timer);
   }
-
-  if (coins.length === 0) {
-    return createToolError(TOOL_ERROR_CODE.STALE_DATA, "No coin data is available right now.");
-  }
-
-  const totalMarketCap = coins.reduce((sum, coin) => sum + coin.marketCap, 0);
-  const totalVolume24h = coins.reduce((sum, coin) => sum + coin.volume24h, 0);
-  const advancers = coins.filter((coin) => coin.change24h > 0).length;
-  const decliners = coins.filter((coin) => coin.change24h < 0).length;
-  const unchanged = coins.length - advancers - decliners;
-  const btc = coins.find((coin) => coin.symbol.toLowerCase() === "btc");
-  const bitcoinDominance =
-    btc && totalMarketCap > 0 ? (btc.marketCap / totalMarketCap) * 100 : null;
-
-  return {
-    totalMarketCap,
-    totalVolume24h,
-    advancers,
-    decliners,
-    unchanged,
-    bitcoinDominance,
-    source: API_COINS_PATH,
-    asOf: new Date().toISOString(),
-  };
 }
 
 export async function getListPerformance(

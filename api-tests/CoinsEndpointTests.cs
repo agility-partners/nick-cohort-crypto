@@ -84,4 +84,35 @@ public class CoinsEndpointTests : IClassFixture<CoinSightApiFactory>
         var coin = await response.Content.ReadFromJsonAsync<JsonElement>(_jsonOptions);
         Assert.Equal("bitcoin", coin.GetProperty("id").GetString());
     }
+
+    [Fact]
+    public async Task GetCoinBySymbol_ValidSymbol_Returns200()
+    {
+        var response = await _client.GetAsync("/api/coins/symbol/btc");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var coin = await response.Content.ReadFromJsonAsync<JsonElement>(_jsonOptions);
+        Assert.Equal("bitcoin", coin.GetProperty("id").GetString());
+        Assert.Equal("BTC", coin.GetProperty("symbol").GetString());
+    }
+
+    [Fact]
+    public async Task GetCoinBySymbol_InvalidSymbol_Returns404()
+    {
+        var response = await _client.GetAsync("/api/coins/symbol/FAKESYMBOL");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCoinBySymbol_CaseInsensitive_Returns200()
+    {
+        var response = await _client.GetAsync("/api/coins/symbol/BTC");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var coin = await response.Content.ReadFromJsonAsync<JsonElement>(_jsonOptions);
+        Assert.Equal("bitcoin", coin.GetProperty("id").GetString());
+    }
 }

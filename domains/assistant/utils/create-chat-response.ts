@@ -6,6 +6,7 @@ import {
   createUIMessageStreamResponse,
   generateText,
   stepCountIs,
+  streamText,
   tool,
   type UIMessage,
 } from "ai";
@@ -97,6 +98,23 @@ function isToolErrorResult(result: ToolErrorResult | ToolSuccessMeta): result is
   return "error" in result;
 }
 
+function formatAsOfTimestamp(isoString: string): string {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) {
+    return isoString;
+  }
+  return date.toLocaleString("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
+  });
+}
+
 function getFreshestAsOf(results: ToolSuccessMeta[]): string {
   const withTimestamps = results.map((result) => ({
     value: result.asOf,
@@ -128,7 +146,7 @@ function buildProvenance(results: ToolSuccessMeta[]): ResponseProvenance {
 function appendProvenanceLine(text: string, provenance: ResponseProvenance): string {
   const normalizedText = text.trim();
   const sourceLine = `${PROVENANCE_PREFIX} ${provenance.sources.join(", ") || "CoinSight API"}`;
-  const freshnessLine = `${FRESHNESS_PREFIX} ${provenance.freshestAsOf}`;
+  const freshnessLine = `${FRESHNESS_PREFIX} ${formatAsOfTimestamp(provenance.freshestAsOf)}`;
 
   if (!normalizedText) {
     return `${sourceLine}\n${freshnessLine}`;
@@ -177,6 +195,17 @@ export async function createChatResponse(request: Request): Promise<Response> {
   }
 
   const { messages, context } = parseResult.data;
+
+  if (messages.length === 0) {
+    return Response.json(
+      {
+        error: "invalid_request",
+        message: "At least one user message is required.",
+      },
+      { status: 400 },
+    );
+  }
+
   const requestUrl = new URL(request.url);
   const evalModeHeader = request.headers.get(ASSISTANT_EVAL_MODE_HEADER);
   const evalModeQuery = requestUrl.searchParams.get("evalMode");
@@ -247,6 +276,16 @@ export async function createChatResponse(request: Request): Promise<Response> {
     }),
   );
 
+  if (modelMessages.length === 0) {
+    return Response.json(
+      {
+        error: "invalid_request",
+        message: "No valid prompt content was provided.",
+      },
+      { status: 400 },
+    );
+  }
+
   let hasToolError = false;
   let hasNotFoundError = false;
 
@@ -265,98 +304,155 @@ export async function createChatResponse(request: Request): Promise<Response> {
     successfulToolMeta.push({ source: result.source, asOf: result.asOf });
   }
 
+  const assistantTools = {
+    getCoinBySymbol: tool({
+      description: "Get latest coin data by ticker symbol.",
+      inputSchema: z.object({
+        symbol: z.string().trim().min(2).max(10),
+      }),
+      execute: async ({ symbol }) => {
+        recordToolCall("getCoinBySymbol");
+        const toolResult =
+          evalScenario === "simulate_unavailable_data"
+            ? createSimulatedToolError("upstream_error")
+            : evalScenario === "simulate_stale_data"
+              ? createSimulatedToolError("stale_data")
+              : await getCoinBySymbol(symbol);
+        captureToolResult(toolResult);
+        return toolResult;
+      },
+    }),
+    getTopMovers: tool({
+      description: "Get top gainers and losers from latest market data.",
+      inputSchema: z.object({
+        limit: z.number().int().min(1).max(20).optional(),
+      }),
+      execute: async ({ limit }) => {
+        recordToolCall("getTopMovers");
+        const toolResult =
+          evalScenario === "simulate_unavailable_data"
+            ? createSimulatedToolError("upstream_error")
+            : evalScenario === "simulate_stale_data"
+              ? createSimulatedToolError("stale_data")
+              : await getTopMovers(resolveTopMoversLimit(limit));
+        captureToolResult(toolResult);
+        return toolResult;
+      },
+    }),
+    getMarketSummary: tool({
+      description: "Get market-wide summary metrics and BTC dominance.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        recordToolCall("getMarketSummary");
+        const toolResult =
+          evalScenario === "simulate_unavailable_data"
+            ? createSimulatedToolError("upstream_error")
+            : evalScenario === "simulate_stale_data"
+              ? createSimulatedToolError("stale_data")
+              : await getMarketSummary();
+        captureToolResult(toolResult);
+        return toolResult;
+      },
+    }),
+    getListPerformance: tool({
+      description:
+        "Compare selected symbol list 24h cap-weighted performance against 24h cap-weighted market baseline.",
+      inputSchema: z.object({
+        symbols: z.array(symbolSchema).min(1).max(MAX_SELECTED_SYMBOLS),
+      }),
+      execute: async ({ symbols }) => {
+        recordToolCall("getListPerformance");
+        const toolResult =
+          evalScenario === "simulate_unavailable_data"
+            ? createSimulatedToolError("upstream_error")
+            : evalScenario === "simulate_stale_data"
+              ? createSimulatedToolError("stale_data")
+              : await getListPerformance(symbols);
+        captureToolResult(toolResult);
+        return toolResult;
+      },
+    }),
+  };
+
+  if (!isEvalMode) {
+    const streamResult = streamText({
+      model: openai("gpt-4.1-mini"),
+      system: getSystemPrompt(selectedSymbols),
+      messages: modelMessages,
+      stopWhen: stepCountIs(MAX_CHAT_STEPS),
+      toolChoice: "auto",
+      tools: assistantTools,
+    });
+
+    const stream = createUIMessageStream({
+      execute: async ({ writer }) => {
+        const uiStream = streamResult.toUIMessageStream();
+        const reader = uiStream.getReader();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            writer.write(value);
+            if (value.type === "text-delta") {
+              await new Promise((resolve) => setTimeout(resolve, 15));
+            }
+          }
+        } catch {
+          return;
+        }
+
+        if (successfulToolMeta.length > 0) {
+          const provenance = buildProvenance(successfulToolMeta);
+          const sourceLine = `${PROVENANCE_PREFIX} ${provenance.sources.join(", ") || "CoinSight API"}`;
+          const freshnessLine = `${FRESHNESS_PREFIX} ${formatAsOfTimestamp(provenance.freshestAsOf)}`;
+          const textId = crypto.randomUUID();
+          writer.write({ type: "text-start", id: textId });
+          writer.write({ type: "text-delta", id: textId, delta: `\n\n${sourceLine}\n${freshnessLine}` });
+          writer.write({ type: "text-end", id: textId });
+        }
+      },
+    });
+
+    return createUIMessageStreamResponse({ stream });
+  }
+
   try {
     const result = await generateText({
       model: openai("gpt-4.1-mini"),
       system: getSystemPrompt(selectedSymbols),
       messages: modelMessages,
       stopWhen: stepCountIs(MAX_CHAT_STEPS),
-      toolChoice: "required",
-      tools: {
-        getCoinBySymbol: tool({
-          description: "Get latest coin data by ticker symbol.",
-          inputSchema: z.object({
-            symbol: z.string().trim().min(2).max(10),
-          }),
-          execute: async ({ symbol }) => {
-            recordToolCall("getCoinBySymbol");
-            const toolResult =
-              evalScenario === "simulate_unavailable_data"
-                ? createSimulatedToolError("upstream_error")
-                : evalScenario === "simulate_stale_data"
-                  ? createSimulatedToolError("stale_data")
-                  : await getCoinBySymbol(symbol);
-            captureToolResult(toolResult);
-            return toolResult;
-          },
-        }),
-        getTopMovers: tool({
-          description: "Get top gainers and losers from latest market data.",
-          inputSchema: z.object({
-            limit: z.number().int().min(1).max(20).optional(),
-          }),
-          execute: async ({ limit }) => {
-            recordToolCall("getTopMovers");
-            const toolResult =
-              evalScenario === "simulate_unavailable_data"
-                ? createSimulatedToolError("upstream_error")
-                : evalScenario === "simulate_stale_data"
-                  ? createSimulatedToolError("stale_data")
-                  : await getTopMovers(resolveTopMoversLimit(limit));
-            captureToolResult(toolResult);
-            return toolResult;
-          },
-        }),
-        getMarketSummary: tool({
-          description: "Get market-wide summary metrics and BTC dominance.",
-          inputSchema: z.object({}),
-          execute: async () => {
-            recordToolCall("getMarketSummary");
-            const toolResult =
-              evalScenario === "simulate_unavailable_data"
-                ? createSimulatedToolError("upstream_error")
-                : evalScenario === "simulate_stale_data"
-                  ? createSimulatedToolError("stale_data")
-                  : await getMarketSummary();
-            captureToolResult(toolResult);
-            return toolResult;
-          },
-        }),
-        getListPerformance: tool({
-          description:
-            "Compare selected symbol list 24h cap-weighted performance against 24h cap-weighted market baseline.",
-          inputSchema: z.object({
-            symbols: z.array(symbolSchema).min(1).max(MAX_SELECTED_SYMBOLS),
-          }),
-          execute: async ({ symbols }) => {
-            recordToolCall("getListPerformance");
-            const toolResult =
-              evalScenario === "simulate_unavailable_data"
-                ? createSimulatedToolError("upstream_error")
-                : evalScenario === "simulate_stale_data"
-                  ? createSimulatedToolError("stale_data")
-                  : await getListPerformance(symbols);
-            captureToolResult(toolResult);
-            return toolResult;
-          },
-        }),
-      },
+      toolChoice: "auto",
+      tools: assistantTools,
     });
 
-    if (hasNotFoundError) {
-      fallbackReason = "not_found";
-      return createResponse(ASSISTANT_NOT_FOUND_FALLBACK);
-    }
-
     if (successfulToolMeta.length === 0) {
+      if (hasNotFoundError) {
+        fallbackReason = "not_found";
+        return createResponse(ASSISTANT_NOT_FOUND_FALLBACK);
+      }
+
       fallbackReason = hasToolError ? "tool_error" : "no_tool_data";
       return createResponse(hasToolError ? ASSISTANT_TOOL_FAILURE_FALLBACK : ASSISTANT_NO_TOOL_DATA_FALLBACK);
     }
 
-    const responseText = appendProvenanceLine(result.text, buildProvenance(successfulToolMeta));
+    const normalizedResultText = result.text.trim();
+    if (!normalizedResultText) {
+      fallbackReason = "none";
+      return createResponse(
+        appendProvenanceLine(
+          "I retrieved verified market data but couldn’t produce a full summary. Please ask again with a specific request.",
+          buildProvenance(successfulToolMeta),
+        ),
+      );
+    }
+
+    const responseText = appendProvenanceLine(normalizedResultText, buildProvenance(successfulToolMeta));
     fallbackReason = "none";
     return createResponse(responseText);
-  } catch {
+  } catch (error) {
+    console.error("Assistant chat generation failed", error);
     fallbackReason = hasToolError ? "tool_error" : "internal_error";
     return createResponse(hasToolError ? ASSISTANT_TOOL_FAILURE_FALLBACK : ASSISTANT_INTERNAL_ERROR_FALLBACK);
   }

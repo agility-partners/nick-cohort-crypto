@@ -8,6 +8,12 @@ public interface ICoinService
 
     Task<CoinDto?> GetCoinById(string id);
 
+    Task<CoinDto?> GetCoinBySymbol(string symbol);
+
+    Task<MarketSummaryDto> GetMarketSummary();
+
+    Task<TopMoversDto> GetTopMovers(int limit);
+
     Task<IReadOnlyList<CoinDto>> GetWatchlist();
 
     Task<AddToWatchlistResult?> AddToWatchlist(string coinId);

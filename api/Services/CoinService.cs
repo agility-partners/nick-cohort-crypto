@@ -376,6 +376,64 @@ public class CoinService : ICoinService
         return Task.FromResult<CoinDto?>(MapToCoinDto(coin));
     }
 
+    public Task<CoinDto?> GetCoinBySymbol(string symbol)
+    {
+        var coin = Coins.FirstOrDefault(c =>
+            string.Equals(c.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+
+        if (coin is null)
+        {
+            _logger.LogWarning("Coin not found by symbol: {Symbol}", symbol);
+            return Task.FromResult<CoinDto?>(null);
+        }
+
+        _logger.LogInformation("Retrieved coin by symbol: {Symbol}", symbol);
+        return Task.FromResult<CoinDto?>(MapToCoinDto(coin));
+    }
+
+    public Task<MarketSummaryDto> GetMarketSummary()
+    {
+        var totalMarketCap = Coins.Sum(c => c.MarketCap);
+        var totalVolume24h = Coins.Sum(c => c.Volume24h);
+        var advancers = Coins.Count(c => c.Change24h > 0);
+        var decliners = Coins.Count(c => c.Change24h < 0);
+        var unchanged = Coins.Count - advancers - decliners;
+        var btc = Coins.FirstOrDefault(c =>
+            string.Equals(c.Symbol, "BTC", StringComparison.OrdinalIgnoreCase));
+        var bitcoinDominance = btc is not null && totalMarketCap > 0
+            ? (btc.MarketCap / totalMarketCap) * 100
+            : (decimal?)null;
+
+        var result = new MarketSummaryDto
+        {
+            TotalMarketCap = totalMarketCap,
+            TotalVolume24h = totalVolume24h,
+            Advancers = advancers,
+            Decliners = decliners,
+            Unchanged = unchanged,
+            BitcoinDominance = bitcoinDominance,
+        };
+
+        _logger.LogInformation("Computed market summary");
+        return Task.FromResult(result);
+    }
+
+    public Task<TopMoversDto> GetTopMovers(int limit)
+    {
+        var allDtos = Coins.Select(MapToCoinDto).ToList();
+        var gainers = allDtos.OrderByDescending(c => c.Change24h).Take(limit).ToList();
+        var losers = allDtos.OrderBy(c => c.Change24h).Take(limit).ToList();
+
+        var result = new TopMoversDto
+        {
+            Gainers = gainers,
+            Losers = losers,
+        };
+
+        _logger.LogInformation("Computed top movers with limit {Limit}", limit);
+        return Task.FromResult(result);
+    }
+
     public Task<IReadOnlyList<CoinDto>> GetWatchlist()
     {
         var watchlistCoinIds = _watchlist

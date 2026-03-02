@@ -88,6 +88,138 @@ public class DatabaseCoinService : ICoinService
         return coin;
     }
 
+    public async Task<CoinDto?> GetCoinBySymbol(string symbol)
+    {
+        const string query = """
+            SELECT
+                id,
+                name,
+                symbol,
+                price,
+                change_24h,
+                market_cap,
+                volume_24h,
+                image,
+                circulating_supply,
+                all_time_high,
+                all_time_low
+            FROM gold.fct_coins
+            WHERE LOWER(symbol) = LOWER(@Symbol)
+            """;
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@Symbol", symbol);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            _logger.LogWarning("Coin not found by symbol in database: {Symbol}", symbol);
+            return null;
+        }
+
+        var coin = MapReaderToCoinDto(reader);
+        _logger.LogInformation("Retrieved coin by symbol from database: {Symbol}", symbol);
+        return coin;
+    }
+
+    public async Task<MarketSummaryDto> GetMarketSummary()
+    {
+        const string query = """
+            SELECT
+                total_coins,
+                total_market_cap,
+                total_24h_volume,
+                coins_up,
+                coins_down,
+                btc_dominance_pct
+            FROM gold.market_summary
+            """;
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(query, connection);
+        await using var reader = await command.ExecuteReaderAsync();
+        await reader.ReadAsync();
+
+        var totalCoins = reader.GetInt32(reader.GetOrdinal("total_coins"));
+        var coinsUp = reader.GetInt32(reader.GetOrdinal("coins_up"));
+        var coinsDown = reader.GetInt32(reader.GetOrdinal("coins_down"));
+
+        _logger.LogInformation("Fetched market summary from gold.market_summary view");
+        return new MarketSummaryDto
+        {
+            TotalMarketCap = GetDecimal(reader, "total_market_cap"),
+            TotalVolume24h = GetDecimal(reader, "total_24h_volume"),
+            Advancers = coinsUp,
+            Decliners = coinsDown,
+            Unchanged = totalCoins - coinsUp - coinsDown,
+            BitcoinDominance = reader.IsDBNull(reader.GetOrdinal("btc_dominance_pct"))
+                ? null
+                : GetDecimal(reader, "btc_dominance_pct"),
+        };
+    }
+
+    public async Task<TopMoversDto> GetTopMovers(int limit)
+    {
+        const string query = """
+            SELECT
+                m.id,
+                m.name,
+                m.symbol,
+                m.price,
+                m.change_24h,
+                m.market_cap,
+                m.category,
+                m.rank,
+                c.volume_24h,
+                c.image,
+                c.circulating_supply,
+                c.all_time_high,
+                c.all_time_low
+            FROM gold.top_movers m
+            INNER JOIN gold.fct_coins c ON m.id = c.id
+            WHERE m.rank <= @Limit
+            ORDER BY m.category, m.rank
+            """;
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@Limit", limit);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        var gainers = new List<CoinDto>();
+        var losers = new List<CoinDto>();
+
+        while (await reader.ReadAsync())
+        {
+            var coin = MapReaderToCoinDto(reader);
+            var category = reader.GetString(reader.GetOrdinal("category"));
+
+            if (category == "gainer")
+            {
+                gainers.Add(coin);
+            }
+            else
+            {
+                losers.Add(coin);
+            }
+        }
+
+        _logger.LogInformation("Fetched top movers from gold.top_movers view with limit {Limit}", limit);
+        return new TopMoversDto
+        {
+            Gainers = gainers,
+            Losers = losers,
+        };
+    }
+
     public async Task<IReadOnlyList<CoinDto>> GetWatchlist()
     {
         const string query = """

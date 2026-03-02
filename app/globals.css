@@ -238,6 +238,16 @@ body {
     blob-pulse 10s ease-in-out infinite;
 }
 
+/* typing indicator pulse */
+@keyframes typing-blink {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+.animate-typing-dot {
+  animation: typing-blink 1.4s ease-in-out infinite;
+}
+
 /* subtle dot texture overlay */
 body::after {
   content: "";

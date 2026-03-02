@@ -33,4 +33,16 @@ public class CoinsController : ControllerBase
 
         return Ok(coin);
     }
+
+    [HttpGet("symbol/{symbol}")]
+    public async Task<ActionResult<CoinDto>> GetCoinBySymbol(string symbol)
+    {
+        var coin = await _coinService.GetCoinBySymbol(symbol);
+        if (coin is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(coin);
+    }
 }

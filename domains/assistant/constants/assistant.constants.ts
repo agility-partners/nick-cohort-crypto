@@ -1,5 +1,5 @@
-export const ASSISTANT_TITLE = "Warehouse-Aware Crypto Assistant";
-export const ASSISTANT_SUBTITLE = "Grounded by CoinSight API data";
+export const ASSISTANT_TITLE = "CoinBOT";
+export const ASSISTANT_SUBTITLE = "Warehouse-Aware Crypto Assistant";
 
 export const CHAT_API_ROUTE = "/api/chat";
 export const ASSISTANT_ROUTE = "/assistant";
@@ -17,6 +17,9 @@ export const MAX_TOP_MOVERS_LIMIT = 20;
 export const MAX_SELECTED_SYMBOLS = 3;
 export const MAX_SYMBOL_LENGTH = 10;
 export const API_COINS_PATH = "/api/coins";
+export const API_MARKET_SUMMARY_PATH = "/api/market/summary";
+export const API_MOVERS_PATH = "/api/movers";
+export const API_COIN_BY_SYMBOL_PATH = "/api/coins/symbol";
 export const MAX_CHAT_STEPS = 6;
 
 export const INVESTMENT_ADVICE_PATTERNS = [
