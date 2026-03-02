@@ -116,7 +116,7 @@ export default function AssistantContent() {
                 <div
                   className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                     isUser
-                      ? "rounded-br-md bg-[var(--accent)] text-black"
+                      ? "rounded-br-md border border-[var(--user-msg-border)] bg-[var(--user-msg-bg)] backdrop-blur-xl text-[var(--text-primary)]"
                       : "rounded-bl-md border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-sm text-[var(--text-primary)]"
                   }`}
                 >
