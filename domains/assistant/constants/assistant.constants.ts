@@ -36,6 +36,9 @@ export const ASSISTANT_INVESTMENT_ADVICE_REFUSAL =
 export const ASSISTANT_NO_TOOL_DATA_FALLBACK =
   "I don’t have verified tool data available for that request right now, so I can’t make factual market claims. Please try again in a moment.";
 
+export const ASSISTANT_NOT_FOUND_FALLBACK =
+  "I couldn’t find market data for that symbol in the current dataset. Please verify the ticker and try again.";
+
 export const ASSISTANT_TOOL_FAILURE_FALLBACK =
   "I’m having trouble reaching market-data tools right now. Please try again shortly.";
 
@@ -47,6 +50,10 @@ export const ASSISTANT_CLIENT_ERROR_FALLBACK =
 
 export const PROVENANCE_PREFIX = "Source:";
 export const FRESHNESS_PREFIX = "As of:";
+
+export const ASSISTANT_EVAL_MODE_HEADER = "x-assistant-eval-mode";
+export const ASSISTANT_EVAL_SCENARIO_HEADER = "x-assistant-eval-scenario";
+export const ASSISTANT_EVAL_MODE_JSON = "json";
 
 export const SYSTEM_PROMPT =
   "You are a crypto assistant for CoinSight. Use tools for factual data. Never invent values. " +

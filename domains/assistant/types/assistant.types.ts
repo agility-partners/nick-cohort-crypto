@@ -21,6 +21,7 @@ export type GuardrailDecision = "allow" | "refuse_investment_advice";
 export type GuardrailFallbackReason =
   | "none"
   | "no_tool_data"
+  | "not_found"
   | "tool_error"
   | "provider_error"
   | "internal_error";
@@ -33,6 +34,42 @@ export interface GuardrailEvaluation {
 export interface ResponseProvenance {
   sources: string[];
   freshestAsOf: string;
+}
+
+export type AssistantEvalScenario =
+  | "none"
+  | "simulate_unavailable_data"
+  | "simulate_stale_data";
+
+export interface AssistantEvalTrace {
+  toolCallCounts: Record<string, number>;
+  successfulToolCallCount: number;
+  toolErrorCount: number;
+  fallbackReason: GuardrailFallbackReason;
+  refusedForAdvice: boolean;
+}
+
+export interface AssistantEvalResponse {
+  text: string;
+  trace: AssistantEvalTrace;
+}
+
+export interface AssistantEvalCaseExpected {
+  minToolCalls: Record<string, number>;
+  requiresSourceFreshnessLine: boolean;
+  expectedFallbackReason: GuardrailFallbackReason;
+  expectRefusal: boolean;
+  mustContainAll?: string[];
+  mustContainAny?: string[];
+  mustNotContain?: string[];
+}
+
+export interface AssistantEvalCase {
+  id: string;
+  prompt: string;
+  scenario: AssistantEvalScenario;
+  context?: ChatRequestContext;
+  expected: AssistantEvalCaseExpected;
 }
 
 export interface ChatRequestContext {

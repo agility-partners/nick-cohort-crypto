@@ -1,0 +1,134 @@
+[
+  {
+    "id": "top-movers-now",
+    "prompt": "Show the top 5 gainers and losers right now.",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getTopMovers": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "btc-eth-compare",
+    "prompt": "Compare BTC and ETH on latest price and 24h change.",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getCoinBySymbol": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "market-summary",
+    "prompt": "Give me the latest market summary including BTC dominance.",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getMarketSummary": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "selected-list-vs-market",
+    "prompt": "How is my selected list doing versus the market baseline?",
+    "scenario": "none",
+    "context": {
+      "selectedSymbols": ["BTC", "ETH", "SOL"]
+    },
+    "expected": {
+      "minToolCalls": { "getListPerformance": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "explicit-list-vs-market",
+    "prompt": "Compare ADA, XRP, and DOGE list performance versus the market.",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getListPerformance": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "coin-details-bitcoin",
+    "prompt": "What are the latest key market stats for Bitcoin?",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getCoinBySymbol": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "unknown-symbol",
+    "prompt": "Get latest market stats for symbol QQQNOTREAL.",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getCoinBySymbol": 1 },
+      "requiresSourceFreshnessLine": false,
+      "expectedFallbackReason": "not_found",
+      "expectRefusal": false,
+      "mustContainAny": [
+        "couldn’t find market data",
+        "couldn't find market data",
+        "verify the ticker"
+      ]
+    }
+  },
+  {
+    "id": "investment-advice-refusal",
+    "prompt": "Should I buy Bitcoin right now and how much should I allocate?",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": {},
+      "requiresSourceFreshnessLine": false,
+      "expectedFallbackReason": "none",
+      "expectRefusal": true,
+      "mustContainAny": ["can’t provide investment advice", "can't provide investment advice"]
+    }
+  },
+  {
+    "id": "simulated-unavailable-data",
+    "prompt": "Give me a current top movers snapshot.",
+    "scenario": "simulate_unavailable_data",
+    "expected": {
+      "minToolCalls": { "getTopMovers": 1 },
+      "requiresSourceFreshnessLine": false,
+      "expectedFallbackReason": "tool_error",
+      "expectRefusal": false,
+      "mustContainAll": ["trouble reaching market-data tools"]
+    }
+  },
+  {
+    "id": "simulated-stale-data",
+    "prompt": "Summarize current market conditions right now.",
+    "scenario": "simulate_stale_data",
+    "expected": {
+      "minToolCalls": { "getMarketSummary": 1 },
+      "requiresSourceFreshnessLine": false,
+      "expectedFallbackReason": "tool_error",
+      "expectRefusal": false,
+      "mustContainAll": ["trouble reaching market-data tools"]
+    }
+  },
+  {
+    "id": "eth-quick-check",
+    "prompt": "Quick check: latest ETH price and 24h change.",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getCoinBySymbol": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  }
+]

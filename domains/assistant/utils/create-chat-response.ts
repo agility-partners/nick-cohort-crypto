@@ -13,9 +13,13 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 import {
+  ASSISTANT_EVAL_MODE_HEADER,
+  ASSISTANT_EVAL_MODE_JSON,
+  ASSISTANT_EVAL_SCENARIO_HEADER,
   ASSISTANT_INTERNAL_ERROR_FALLBACK,
   ASSISTANT_INVESTMENT_ADVICE_REFUSAL,
   ASSISTANT_NO_TOOL_DATA_FALLBACK,
+  ASSISTANT_NOT_FOUND_FALLBACK,
   ASSISTANT_TOOL_FAILURE_FALLBACK,
   FRESHNESS_PREFIX,
   INVESTMENT_ADVICE_PATTERNS,
@@ -26,7 +30,11 @@ import {
   SYSTEM_PROMPT,
 } from "@/domains/assistant/constants/assistant.constants";
 import type {
+  AssistantEvalResponse,
+  AssistantEvalScenario,
+  AssistantEvalTrace,
   ChatRequestBody,
+  GuardrailFallbackReason,
   ResponseProvenance,
   ToolErrorResult,
   ToolSuccessMeta,
@@ -129,7 +137,19 @@ function appendProvenanceLine(text: string, provenance: ResponseProvenance): str
   return `${normalizedText}\n\n${sourceLine}\n${freshnessLine}`;
 }
 
-function createStaticAssistantResponse(text: string): Response {
+function getAssistantEvalScenario(value: string | null): AssistantEvalScenario {
+  if (value === "simulate_unavailable_data" || value === "simulate_stale_data") {
+    return value;
+  }
+
+  return "none";
+}
+
+function createAssistantResponse(text: string, evalResponse?: AssistantEvalResponse): Response {
+  if (evalResponse) {
+    return Response.json(evalResponse);
+  }
+
   const stream = createUIMessageStream({
     execute: ({ writer }) => {
       const textId = crypto.randomUUID();
@@ -157,10 +177,65 @@ export async function createChatResponse(request: Request): Promise<Response> {
   }
 
   const { messages, context } = parseResult.data;
+  const requestUrl = new URL(request.url);
+  const evalModeHeader = request.headers.get(ASSISTANT_EVAL_MODE_HEADER);
+  const evalModeQuery = requestUrl.searchParams.get("evalMode");
+  const isEvalMode =
+    evalModeHeader === ASSISTANT_EVAL_MODE_JSON || evalModeQuery === ASSISTANT_EVAL_MODE_JSON;
+  const evalScenarioHeader = request.headers.get(ASSISTANT_EVAL_SCENARIO_HEADER);
+  const evalScenarioQuery = requestUrl.searchParams.get("evalScenario");
+  const evalScenario = getAssistantEvalScenario(evalScenarioHeader ?? evalScenarioQuery);
   const latestUserText = getLatestUserMessageText(messages);
+  const toolCallCounts: Record<string, number> = {
+    getCoinBySymbol: 0,
+    getTopMovers: 0,
+    getMarketSummary: 0,
+    getListPerformance: 0,
+  };
+  const successfulToolMeta: ToolSuccessMeta[] = [];
+
+  let toolErrorCount = 0;
+  let fallbackReason: GuardrailFallbackReason = "none";
+  let refusedForAdvice = false;
+
+  const getEvalTrace = (): AssistantEvalTrace => ({
+    toolCallCounts,
+    successfulToolCallCount: successfulToolMeta.length,
+    toolErrorCount,
+    fallbackReason,
+    refusedForAdvice,
+  });
+
+  const createResponse = (text: string): Response => {
+    if (!isEvalMode) {
+      return createAssistantResponse(text);
+    }
+
+    return createAssistantResponse(text, {
+      text,
+      trace: getEvalTrace(),
+    });
+  };
+
+  function recordToolCall(toolName: keyof typeof toolCallCounts): void {
+    toolCallCounts[toolName] += 1;
+  }
+
+  function createSimulatedToolError(code: ToolErrorResult["error"]): ToolErrorResult {
+    return {
+      error: code,
+      message:
+        code === "stale_data"
+          ? "Simulated stale market data for eval."
+          : "Simulated unavailable market data for eval.",
+      source: "CoinSight Eval Harness",
+      asOf: new Date().toISOString(),
+    };
+  }
 
   if (isInvestmentAdviceRequest(latestUserText)) {
-    return createStaticAssistantResponse(ASSISTANT_INVESTMENT_ADVICE_REFUSAL);
+    refusedForAdvice = true;
+    return createResponse(ASSISTANT_INVESTMENT_ADVICE_REFUSAL);
   }
 
   const selectedSymbols = (context?.selectedSymbols ?? []).map((symbol) => symbol.toUpperCase());
@@ -172,11 +247,17 @@ export async function createChatResponse(request: Request): Promise<Response> {
     }),
   );
 
-  const successfulToolMeta: ToolSuccessMeta[] = [];
   let hasToolError = false;
+  let hasNotFoundError = false;
 
   function captureToolResult(result: ToolErrorResult | ToolSuccessMeta): void {
     if (isToolErrorResult(result)) {
+      toolErrorCount += 1;
+      if (result.error === "not_found") {
+        hasNotFoundError = true;
+        return;
+      }
+
       hasToolError = true;
       return;
     }
@@ -198,7 +279,13 @@ export async function createChatResponse(request: Request): Promise<Response> {
             symbol: z.string().trim().min(2).max(10),
           }),
           execute: async ({ symbol }) => {
-            const toolResult = await getCoinBySymbol(symbol);
+            recordToolCall("getCoinBySymbol");
+            const toolResult =
+              evalScenario === "simulate_unavailable_data"
+                ? createSimulatedToolError("upstream_error")
+                : evalScenario === "simulate_stale_data"
+                  ? createSimulatedToolError("stale_data")
+                  : await getCoinBySymbol(symbol);
             captureToolResult(toolResult);
             return toolResult;
           },
@@ -209,7 +296,13 @@ export async function createChatResponse(request: Request): Promise<Response> {
             limit: z.number().int().min(1).max(20).optional(),
           }),
           execute: async ({ limit }) => {
-            const toolResult = await getTopMovers(resolveTopMoversLimit(limit));
+            recordToolCall("getTopMovers");
+            const toolResult =
+              evalScenario === "simulate_unavailable_data"
+                ? createSimulatedToolError("upstream_error")
+                : evalScenario === "simulate_stale_data"
+                  ? createSimulatedToolError("stale_data")
+                  : await getTopMovers(resolveTopMoversLimit(limit));
             captureToolResult(toolResult);
             return toolResult;
           },
@@ -218,7 +311,13 @@ export async function createChatResponse(request: Request): Promise<Response> {
           description: "Get market-wide summary metrics and BTC dominance.",
           inputSchema: z.object({}),
           execute: async () => {
-            const toolResult = await getMarketSummary();
+            recordToolCall("getMarketSummary");
+            const toolResult =
+              evalScenario === "simulate_unavailable_data"
+                ? createSimulatedToolError("upstream_error")
+                : evalScenario === "simulate_stale_data"
+                  ? createSimulatedToolError("stale_data")
+                  : await getMarketSummary();
             captureToolResult(toolResult);
             return toolResult;
           },
@@ -230,7 +329,13 @@ export async function createChatResponse(request: Request): Promise<Response> {
             symbols: z.array(symbolSchema).min(1).max(MAX_SELECTED_SYMBOLS),
           }),
           execute: async ({ symbols }) => {
-            const toolResult = await getListPerformance(symbols);
+            recordToolCall("getListPerformance");
+            const toolResult =
+              evalScenario === "simulate_unavailable_data"
+                ? createSimulatedToolError("upstream_error")
+                : evalScenario === "simulate_stale_data"
+                  ? createSimulatedToolError("stale_data")
+                  : await getListPerformance(symbols);
             captureToolResult(toolResult);
             return toolResult;
           },
@@ -238,17 +343,21 @@ export async function createChatResponse(request: Request): Promise<Response> {
       },
     });
 
+    if (hasNotFoundError) {
+      fallbackReason = "not_found";
+      return createResponse(ASSISTANT_NOT_FOUND_FALLBACK);
+    }
+
     if (successfulToolMeta.length === 0) {
-      return createStaticAssistantResponse(
-        hasToolError ? ASSISTANT_TOOL_FAILURE_FALLBACK : ASSISTANT_NO_TOOL_DATA_FALLBACK,
-      );
+      fallbackReason = hasToolError ? "tool_error" : "no_tool_data";
+      return createResponse(hasToolError ? ASSISTANT_TOOL_FAILURE_FALLBACK : ASSISTANT_NO_TOOL_DATA_FALLBACK);
     }
 
     const responseText = appendProvenanceLine(result.text, buildProvenance(successfulToolMeta));
-    return createStaticAssistantResponse(responseText);
+    fallbackReason = "none";
+    return createResponse(responseText);
   } catch {
-    return createStaticAssistantResponse(
-      hasToolError ? ASSISTANT_TOOL_FAILURE_FALLBACK : ASSISTANT_INTERNAL_ERROR_FALLBACK,
-    );
+    fallbackReason = hasToolError ? "tool_error" : "internal_error";
+    return createResponse(hasToolError ? ASSISTANT_TOOL_FAILURE_FALLBACK : ASSISTANT_INTERNAL_ERROR_FALLBACK);
   }
 }

@@ -180,6 +180,16 @@ Covers all 5 API endpoints (10 tests) and frontend integration (5 browser tests)
 node scripts/full-stack-smoke.mjs
 ```
 
+### Assistant golden evals
+
+Runs 11 assistant eval prompts with deterministic checks for tool usage, grounding/freshness lines, refusal behavior, unknown symbol handling, and stale/unavailable fallbacks.
+
+Requires frontend running on port 3000 and a valid `OPENAI_API_KEY` in app env.
+
+```bash
+npm run test:assistant-evals
+```
+
 ---
 
 ## Project shape
@@ -227,5 +237,6 @@ docs/                        — source-of-truth architecture and implementation
 | [api-architecture.md](docs/api-architecture.md) | .NET 8 API structure, endpoints, DI, CORS, middleware, logging, tests |
 | [docker.md](docs/docker.md) | Dockerfiles, Docker Compose services map, networking |
 | [playwright-testing.md](docs/playwright-testing.md) | E2E setup, commands, suite coverage, full-stack smoke test |
+| [assistant-evals.md](docs/assistant-evals.md) | Assistant golden eval fixtures, runner behavior, and CI/local usage |
 | [decisions.md](docs/decisions.md) | Key architectural decisions and reasoning |
 | [roadmap.md](docs/roadmap.md) | Completed work, known gaps, and evolution path |
