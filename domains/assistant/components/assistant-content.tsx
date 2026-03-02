@@ -6,6 +6,7 @@ import {
   ASSISTANT_CLIENT_ERROR_FALLBACK,
   ASSISTANT_SUBTITLE,
   ASSISTANT_TITLE,
+  STARTER_PROMPTS,
 } from "@/domains/assistant/constants/assistant.constants";
 import { useAssistantChat } from "@/domains/assistant/hooks/use-assistant-chat";
 
@@ -89,9 +90,18 @@ export default function AssistantContent() {
               <p className="text-sm font-medium text-[var(--text-primary)]">Ask me anything about crypto</p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">I have access to live market data, prices, and trends.</p>
             </div>
-            <p className="rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-2 text-xs text-[var(--text-muted)]">
-              Try: &quot;Top 5 gainers and BTC dominance right now.&quot;
-            </p>
+            <div className="flex flex-col gap-2">
+              {STARTER_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => sendMessage({ text: prompt })}
+                  className="rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-2 text-xs text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
 

@@ -59,6 +59,12 @@ export const ASSISTANT_EVAL_MODE_HEADER = "x-assistant-eval-mode";
 export const ASSISTANT_EVAL_SCENARIO_HEADER = "x-assistant-eval-scenario";
 export const ASSISTANT_EVAL_MODE_JSON = "json";
 
+export const STARTER_PROMPTS = [
+  "What are the top gainers today?",
+  "Give me a market summary with BTC dominance.",
+  "How is my watchlist performing?",
+];
+
 export const SYSTEM_PROMPT =
   "You are a crypto assistant for CoinSight. Use tools for factual data. Never invent values. " +
   "If tool data is unavailable, stale, or missing, say that clearly. " +
