@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api", "api", "{D82C56D6-B2CD-F611-9E31-04638F7EC30E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-tests", "api-tests", "{B8AF610A-2CD3-11FC-44B3-320B798B6B49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoApi", "api\CryptoApi.csproj", "{78B1EE7A-759F-606B-A789-BA7DF01C27BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoApi.Tests", "api-tests\CryptoApi.Tests.csproj", "{2C5D2741-B962-0F47-45BB-E949DCD5A2CF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{78B1EE7A-759F-606B-A789-BA7DF01C27BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78B1EE7A-759F-606B-A789-BA7DF01C27BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78B1EE7A-759F-606B-A789-BA7DF01C27BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78B1EE7A-759F-606B-A789-BA7DF01C27BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C5D2741-B962-0F47-45BB-E949DCD5A2CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C5D2741-B962-0F47-45BB-E949DCD5A2CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C5D2741-B962-0F47-45BB-E949DCD5A2CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C5D2741-B962-0F47-45BB-E949DCD5A2CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{78B1EE7A-759F-606B-A789-BA7DF01C27BB} = {D82C56D6-B2CD-F611-9E31-04638F7EC30E}
+		{2C5D2741-B962-0F47-45BB-E949DCD5A2CF} = {B8AF610A-2CD3-11FC-44B3-320B798B6B49}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A4721D19-6011-41FD-8431-69AB586FCF9F}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,15 @@
+coin_dbt:
+  target: docker
+  outputs:
+    docker:
+      type: sqlserver
+      driver: "ODBC Driver 18 for SQL Server"
+      server: sqlserver
+      port: 1433
+      database: CoinSightDB
+      schema: dbo
+      user: SA
+      password: "{{ env_var('SA_PASSWORD') }}"
+      encrypt: true
+      trust_cert: true
+      threads: 4

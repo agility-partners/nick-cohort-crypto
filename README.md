@@ -41,7 +41,7 @@ CoinSight is a full-stack crypto dashboard with a live data pipeline. A Python i
 ### Infrastructure
 
 - Docker (multi-stage builds)
-- Docker Compose (4 services: `sqlserver`, `ingest`, `api`, `frontend`)
+- Docker Compose (5 services: `sqlserver`, `ingest`, `dbt`, `api`, `frontend`)
 
 ---
 
@@ -81,7 +81,7 @@ See [docs/data-pipeline.md](docs/data-pipeline.md) for the full pipeline referen
 cp .env.example .env
 # Edit .env — set SA_PASSWORD (must meet SQL Server complexity requirements)
 
-# 2. Start all four services (sqlserver, ingest, api, frontend)
+# 2. Start all five services (sqlserver, ingest, dbt, api, frontend)
 docker compose up --build
 ```
 
@@ -93,25 +93,11 @@ Ingestion successful at 2026-02-26T17:44:53.253831+00:00. Inserted 50 coins.
 [2026-02-26T17:44:53Z] Run complete. Sleeping 300 seconds...
 ```
 
-### Run dbt to populate Silver and Gold
+### dbt transform scheduling
 
-dbt runs from the host machine (not in Docker). Set it up once:
+The `dbt` Docker service runs `dbt run` in a loop (default every 300 seconds) so Silver/Gold stay synchronized with ingestion.
 
-```bash
-python -m venv ~/dbt-env
-source ~/dbt-env/bin/activate
-pip install dbt-sqlserver
-```
-
-After ingestion has run at least once:
-
-```bash
-source ~/dbt-env/bin/activate
-cd coin_dbt
-dbt run
-```
-
-This builds `silver.stg_coins`, `gold.fct_coins`, `gold.market_summary`, and `gold.top_movers`. The API serves from `gold.fct_coins` — re-run `dbt run` any time you want to refresh Silver and Gold with the latest Bronze data.
+To adjust cadence, set `DBT_TRANSFORM_INTERVAL_SECONDS` in `.env`.
 
 ### Verify
 
@@ -159,6 +145,7 @@ npm run build
 npm run start
 docker compose down        # stop and remove containers
 docker compose logs ingest # view ingest service output
+docker compose logs -f dbt # tail dbt transform runs
 docker compose logs -f api # tail API logs
 ```
 

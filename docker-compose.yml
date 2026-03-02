@@ -37,6 +37,20 @@ services:
     networks:
       - app-net
 
+  dbt:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile.dbt-runner
+    depends_on:
+      - sqlserver
+      - ingest
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      DBT_TRANSFORM_INTERVAL_SECONDS: ${DBT_TRANSFORM_INTERVAL_SECONDS:-300}
+    restart: unless-stopped
+    networks:
+      - app-net
+
   frontend:
     build:
       context: .
@@ -45,6 +59,7 @@ services:
         NEXT_PUBLIC_API_URL: http://api:5000
     environment:
       NEXT_PUBLIC_API_URL: http://api:5000
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     ports:
       - "3000:3000"
     depends_on:

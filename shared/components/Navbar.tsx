@@ -25,6 +25,7 @@ export default function Navbar() {
     : NAV_ITEMS.filter((item) => item.view !== VIEW_MODE.WATCHLIST);
   const isHome = pathname === "/";
   const isWatchlistRoute = pathname.startsWith("/watchlist");
+  const isAssistantRoute = pathname.startsWith("/assistant");
 
   return (
     <nav className="border-b border-[var(--card-border)] bg-[var(--header-bg)] backdrop-blur-lg">
@@ -52,6 +53,21 @@ export default function Navbar() {
               </li>
             );
           })}
+          <li>
+            <Link
+              href="/assistant"
+              className={`relative block whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                isAssistantRoute
+                  ? "bg-green-500/[0.1] text-[var(--accent)]"
+                  : "text-[var(--text-muted)] hover:bg-[var(--badge-bg)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              Assistant
+              {isAssistantRoute && (
+                <span className="absolute inset-x-2 -bottom-[9px] h-0.5 rounded-full bg-gradient-to-r from-green-400 to-emerald-400" />
+              )}
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
