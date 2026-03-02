@@ -1,16 +1,13 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 
 import {
   ASSISTANT_CLIENT_ERROR_FALLBACK,
   ASSISTANT_SUBTITLE,
   ASSISTANT_TITLE,
-  CHAT_API_ROUTE,
 } from "@/domains/assistant/constants/assistant.constants";
-import { buildChatRequestContext } from "@/domains/assistant/utils/chat-request-context";
+import { useAssistantChat } from "@/domains/assistant/hooks/use-assistant-chat";
 
 function getMessageText(parts: Array<{ type: string; text?: string }>): string {
   return parts
@@ -30,22 +27,7 @@ function RobotIcon({ className }: { className?: string }) {
 export default function AssistantContent() {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({
-      api: CHAT_API_ROUTE,
-      prepareSendMessagesRequest: async ({ body, messages: requestMessages }) => {
-        const context = await buildChatRequestContext();
-
-        return {
-          body: {
-            ...(body ?? {}),
-            messages: requestMessages,
-            context,
-          },
-        };
-      },
-    }),
-  });
+  const { messages, sendMessage, status, error } = useAssistantChat();
 
   const isLoading = status === "submitted" || status === "streaming";
 

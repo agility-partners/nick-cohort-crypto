@@ -6,6 +6,7 @@ import "./globals.css";
 import Header from "@/shared/components/header";
 import Navbar from "@/shared/components/navbar";
 import ThemeProvider from "@/shared/components/theme-provider";
+import { ChatProvider } from "@/domains/assistant/hooks/use-assistant-chat";
 import { WatchlistProvider } from "@/domains/crypto/hooks/use-watchlist";
 
 const geistSans = Geist({
@@ -33,19 +34,21 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <WatchlistProvider>
-            {/* animated bouncing green blobs */}
-            <div className="bg-blobs" aria-hidden="true">
-              <div className="blob blob-1" />
-              <div className="blob blob-2" />
-            </div>
+            <ChatProvider>
+              {/* animated bouncing green blobs */}
+              <div className="bg-blobs" aria-hidden="true">
+                <div className="blob blob-1" />
+                <div className="blob blob-2" />
+              </div>
 
-            <div className="relative z-10">
-              <Header />
-              <Suspense>
-                <Navbar />
-              </Suspense>
-              {children}
-            </div>
+              <div className="relative z-10">
+                <Header />
+                <Suspense>
+                  <Navbar />
+                </Suspense>
+                {children}
+              </div>
+            </ChatProvider>
           </WatchlistProvider>
         </ThemeProvider>
       </body>
