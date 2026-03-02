@@ -17,6 +17,26 @@ BEGIN
 END;
 GO
 
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.schemas
+    WHERE name = 'silver'
+)
+BEGIN
+    EXEC('CREATE SCHEMA silver');
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.schemas
+    WHERE name = 'gold'
+)
+BEGIN
+    EXEC('CREATE SCHEMA gold');
+END;
+GO
+
 IF OBJECT_ID('bronze.raw_coin_market', 'U') IS NULL
 BEGIN
     CREATE TABLE bronze.raw_coin_market (

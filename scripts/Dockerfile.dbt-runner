@@ -24,7 +24,12 @@ RUN echo '#!/bin/sh' > /entrypoint.sh \
   && echo 'interval="${DBT_TRANSFORM_INTERVAL_SECONDS:-300}"' >> /entrypoint.sh \
   && echo 'while true; do' >> /entrypoint.sh \
   && echo '  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Starting dbt run..."' >> /entrypoint.sh \
-  && echo '  dbt run --project-dir /app/coin_dbt --profiles-dir /app/coin_dbt/profiles || true' >> /entrypoint.sh \
+  && echo '  if dbt run --project-dir /app/coin_dbt --profiles-dir /app/coin_dbt/profiles; then' >> /entrypoint.sh \
+  && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] dbt run succeeded. Starting dbt test..."' >> /entrypoint.sh \
+  && echo '    dbt test --project-dir /app/coin_dbt --profiles-dir /app/coin_dbt/profiles || echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] WARNING: dbt test failed"' >> /entrypoint.sh \
+  && echo '  else' >> /entrypoint.sh \
+  && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] WARNING: dbt run failed, skipping dbt test"' >> /entrypoint.sh \
+  && echo '  fi' >> /entrypoint.sh \
   && echo '  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] dbt cycle complete. Sleeping ${interval} seconds..."' >> /entrypoint.sh \
   && echo '  sleep "${interval}"' >> /entrypoint.sh \
   && echo 'done' >> /entrypoint.sh \

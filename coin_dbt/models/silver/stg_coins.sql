@@ -1,10 +1,13 @@
-{{ config(materialized='view', schema='silver') }}
+{{ config(materialized='incremental', schema='silver', unique_key=['coin_id', 'last_updated']) }}
 
 with raw_coin_market as (
     select
         ingested_at,
         raw_json
     from {{ source('bronze', 'raw_coin_market') }}
+    {% if is_incremental() %}
+    where ingested_at > (select max(ingested_at) from {{ this }})
+    {% endif %}
 ),
 exploded as (
     select
