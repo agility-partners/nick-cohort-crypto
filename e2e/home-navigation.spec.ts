@@ -1,62 +1,78 @@
 import { expect, test } from "@playwright/test";
 import { registerE2ELogging } from "./utils/test-logging";
+import { clearWatchlist } from "./utils/api-helpers";
+import { WatchlistPage } from "./pages/WatchlistPage";
+import { NavigationComponent } from "./pages/NavigationComponent";
 
 test.describe("Home navigation", () => {
   registerE2ELogging("Home navigation");
 
+  test.beforeEach(async ({ request }) => {
+    await clearWatchlist(request);
+  });
+
   test("shows all-coins tab with compare and no watchlist when empty", async ({ page }) => {
+    const watchlistPage = new WatchlistPage(page);
+    const nav = new NavigationComponent(page);
+
     await test.step("Open home page and verify default all-coins state", async () => {
-      await page.goto("/");
-      await expect(page.getByRole("heading", { level: 2, name: "All Coins" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Watchlist", exact: true })).toHaveCount(0);
-      await expect(page.getByRole("link", { name: "All Coins", exact: true })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Compare", exact: true })).toBeVisible();
+      await watchlistPage.goto();
+      await watchlistPage.expectAllCoinsHeadingVisible();
+      await nav.expectWatchlistTabHidden();
+      await nav.expectAllCoinsTabVisible();
+      await nav.expectCompareTabVisible();
     });
   });
 
   test("updates sort metric from all coins controls", async ({ page }) => {
+    const watchlistPage = new WatchlistPage(page);
+
     await test.step("Open home page and verify default sort metric", async () => {
-      await page.goto("/");
-      await expect(page.locator("#all-coins-sort")).toHaveValue("market-cap");
+      await watchlistPage.goto();
+      await watchlistPage.expectSortMetric("market-cap");
     });
 
     await test.step("Switch to highest-volume sort and verify selected value", async () => {
-      await page.locator("#all-coins-sort").selectOption("highest-volume");
-      await expect(page.locator("#all-coins-sort")).toHaveValue("highest-volume");
+      await watchlistPage.setSortMetric("highest-volume");
+      await watchlistPage.expectSortMetric("highest-volume");
     });
   });
 
   test("toggles market sort order icon", async ({ page }) => {
-    await test.step("Open home page and verify default sort order", async () => {
-      await page.goto("/");
+    const watchlistPage = new WatchlistPage(page);
 
-      const sortButton = page.getByRole("button", { name: "Sort order descending" });
-      await expect(sortButton).toBeVisible();
+    await test.step("Open home page and verify default sort order", async () => {
+      await watchlistPage.goto();
+      await watchlistPage.expectSortDescVisible();
     });
 
     await test.step("Toggle sort and verify order changes", async () => {
-      await page.getByRole("button", { name: "Sort order descending" }).click();
-      await expect(page.getByRole("button", { name: "Sort order ascending" })).toBeVisible();
+      await watchlistPage.toggleSortOrder();
+      await watchlistPage.expectSortAscVisible();
     });
   });
 
   test("falls back to All Coins when watchlist view is requested without saved watchlist", async ({ page }) => {
-    await test.step("Open home with watchlist query and verify safe fallback", async () => {
-      await page.goto("/?view=watchlist");
+    const watchlistPage = new WatchlistPage(page);
+    const nav = new NavigationComponent(page);
 
-      await expect(page.getByRole("heading", { level: 2, name: "All Coins" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Watchlist", exact: true })).toHaveCount(0);
+    await test.step("Open home with watchlist query and verify safe fallback", async () => {
+      await watchlistPage.gotoWithView("watchlist");
+      await watchlistPage.expectAllCoinsHeadingVisible();
+      await nav.expectWatchlistTabHidden();
     });
   });
 
   test("falls back to All Coins when an invalid view query is provided", async ({ page }) => {
-    await test.step("Open home with invalid query and verify default heading", async () => {
-      await page.goto("/?view=invalid-view");
+    const watchlistPage = new WatchlistPage(page);
+    const nav = new NavigationComponent(page);
 
-      await expect(page.getByRole("heading", { level: 2, name: "All Coins" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "All Coins", exact: true })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Top Gainers", exact: true })).toHaveCount(0);
-      await expect(page.getByRole("link", { name: "Highest Volume", exact: true })).toHaveCount(0);
+    await test.step("Open home with invalid query and verify default heading", async () => {
+      await watchlistPage.gotoWithView("invalid-view");
+      await watchlistPage.expectAllCoinsHeadingVisible();
+      await nav.expectAllCoinsTabVisible();
+      await watchlistPage.expectNoTabVisible("Top Gainers");
+      await watchlistPage.expectNoTabVisible("Highest Volume");
     });
   });
 });
