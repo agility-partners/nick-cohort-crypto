@@ -20,6 +20,7 @@ export const API_COINS_PATH = "/api/coins";
 export const API_MARKET_SUMMARY_PATH = "/api/market/summary";
 export const API_MOVERS_PATH = "/api/movers";
 export const API_COIN_BY_SYMBOL_PATH = "/api/coins/symbol";
+export const API_WATCHLIST_PATH = "/api/watchlist";
 export const MAX_CHAT_STEPS = 6;
 
 export const INVESTMENT_ADVICE_PATTERNS = [
@@ -60,5 +61,7 @@ export const ASSISTANT_EVAL_MODE_JSON = "json";
 
 export const SYSTEM_PROMPT =
   "You are a crypto assistant for CoinSight. Use tools for factual data. Never invent values. " +
-  "If tool data is unavailable, stale, or missing, say that clearly. Include source freshness in factual answers. " +
-  "Do not provide buy/sell recommendations or financial advice.";
+  "If tool data is unavailable, stale, or missing, say that clearly. " +
+  "Do not include dates, timestamps, or source attribution in your responses — that metadata is appended automatically. " +
+  "Do not provide buy/sell recommendations or financial advice. " +
+  "You can check the user's watchlist when they ask things like 'what's on my watchlist?', 'how is my watchlist doing?', or 'show me my watchlist performance.' Use the getWatchlist tool to retrieve their watchlist coins and market data.";

@@ -45,6 +45,7 @@ import {
   getListPerformance,
   getMarketSummary,
   getTopMovers,
+  getWatchlist,
   resolveTopMoversLimit,
 } from "@/domains/assistant/utils/assistant-api";
 
@@ -220,6 +221,7 @@ export async function createChatResponse(request: Request): Promise<Response> {
     getTopMovers: 0,
     getMarketSummary: 0,
     getListPerformance: 0,
+    getWatchlist: 0,
   };
   const successfulToolMeta: ToolSuccessMeta[] = [];
 
@@ -368,6 +370,22 @@ export async function createChatResponse(request: Request): Promise<Response> {
             : evalScenario === "simulate_stale_data"
               ? createSimulatedToolError("stale_data")
               : await getListPerformance(symbols);
+        captureToolResult(toolResult);
+        return toolResult;
+      },
+    }),
+    getWatchlist: tool({
+      description:
+        "Get all coins currently on the user's watchlist with their latest market data.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        recordToolCall("getWatchlist");
+        const toolResult =
+          evalScenario === "simulate_unavailable_data"
+            ? createSimulatedToolError("upstream_error")
+            : evalScenario === "simulate_stale_data"
+              ? createSimulatedToolError("stale_data")
+              : await getWatchlist();
         captureToolResult(toolResult);
         return toolResult;
       },

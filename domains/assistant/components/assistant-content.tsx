@@ -152,8 +152,8 @@ export default function AssistantContent() {
 
           {showTypingIndicator ? (
             <div className="flex justify-start">
-              <div className="mr-3 mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] font-bold text-black">
-                CS
+              <div className="mr-3 mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-black">
+                <RobotIcon className="h-4 w-4" />
               </div>
               <div className="rounded-2xl rounded-bl-md border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-3">
                 <div className="flex items-center gap-1.5">

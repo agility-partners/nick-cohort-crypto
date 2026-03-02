@@ -99,6 +99,10 @@ export interface MarketSummaryResult extends ToolSuccessMeta {
   bitcoinDominance: number | null;
 }
 
+export interface WatchlistResult extends ToolSuccessMeta {
+  coins: Crypto[];
+}
+
 export interface ListPerformanceItem {
   id: string;
   name: string;

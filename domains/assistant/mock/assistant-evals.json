@@ -130,5 +130,27 @@
       "expectedFallbackReason": "none",
       "expectRefusal": false
     }
+  },
+  {
+    "id": "watchlist-contents",
+    "prompt": "What's on my watchlist?",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getWatchlist": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
+  },
+  {
+    "id": "watchlist-performance",
+    "prompt": "How are my watchlist coins performing today?",
+    "scenario": "none",
+    "expected": {
+      "minToolCalls": { "getWatchlist": 1 },
+      "requiresSourceFreshnessLine": true,
+      "expectedFallbackReason": "none",
+      "expectRefusal": false
+    }
   }
 ]

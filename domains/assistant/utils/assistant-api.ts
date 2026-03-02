@@ -6,6 +6,7 @@ import {
   API_MARKET_SUMMARY_PATH,
   API_MOVERS_PATH,
   API_TIMEOUT_MS,
+  API_WATCHLIST_PATH,
   DEFAULT_TOP_MOVERS_LIMIT,
   MAX_SELECTED_SYMBOLS,
   MAX_SYMBOL_LENGTH,
@@ -19,6 +20,7 @@ import type {
   MarketSummaryResult,
   ToolErrorResult,
   TopMoversResult,
+  WatchlistResult,
 } from "@/domains/assistant/types/assistant.types";
 import type { Crypto } from "@/domains/crypto/types/crypto.types";
 
@@ -222,6 +224,48 @@ export async function getMarketSummary(): Promise<MarketSummaryResult | ToolErro
     return createToolError(
       TOOL_ERROR_CODE.UPSTREAM_ERROR,
       "Market summary request failed or timed out.",
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function getWatchlist(): Promise<WatchlistResult | ToolErrorResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${getServerApiBaseUrl()}${API_WATCHLIST_PATH}`,
+      { method: "GET", cache: "no-store", signal: controller.signal },
+    );
+
+    if (!response.ok) {
+      return createToolError(
+        TOOL_ERROR_CODE.UPSTREAM_ERROR,
+        "Watchlist data is currently unavailable.",
+      );
+    }
+
+    const data = (await response.json()) as unknown;
+    if (!Array.isArray(data)) {
+      return createToolError(
+        TOOL_ERROR_CODE.UPSTREAM_ERROR,
+        "Watchlist data source returned an invalid payload.",
+      );
+    }
+
+    return {
+      coins: data as Crypto[],
+      source: API_WATCHLIST_PATH,
+      asOf: new Date().toISOString(),
+    };
+  } catch {
+    return createToolError(
+      TOOL_ERROR_CODE.UPSTREAM_ERROR,
+      "Watchlist request failed or timed out.",
     );
   } finally {
     clearTimeout(timer);
