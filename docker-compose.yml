@@ -6,7 +6,8 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - sqlserver
+      init-db:
+        condition: service_completed_successfully
     environment:
       ConnectionStrings__CoinSightDb: "Server=sqlserver,1433;Database=CoinSightDB;User Id=SA;Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;"
     networks:
@@ -24,12 +25,25 @@ services:
     networks:
       - app-net
 
+  init-db:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile.init-db
+    depends_on:
+      - sqlserver
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+    restart: "no"
+    networks:
+      - app-net
+
   ingest:
     build:
       context: ./scripts
       dockerfile: Dockerfile.ingest
     depends_on:
-      - sqlserver
+      init-db:
+        condition: service_completed_successfully
     environment:
       SA_PASSWORD: ${SA_PASSWORD}
       DOCKER_ENV: "true"
@@ -42,8 +56,10 @@ services:
       context: .
       dockerfile: scripts/Dockerfile.dbt-runner
     depends_on:
-      - sqlserver
-      - ingest
+      init-db:
+        condition: service_completed_successfully
+      ingest:
+        condition: service_started
     environment:
       SA_PASSWORD: ${SA_PASSWORD}
       DBT_TRANSFORM_INTERVAL_SECONDS: ${DBT_TRANSFORM_INTERVAL_SECONDS:-300}
