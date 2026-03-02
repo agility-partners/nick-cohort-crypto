@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
 import {
+  ASSISTANT_CLIENT_ERROR_FALLBACK,
   ASSISTANT_SUBTITLE,
   ASSISTANT_TITLE,
   CHAT_API_ROUTE,
@@ -59,7 +60,7 @@ export default function AssistantContent() {
             <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-rose-300">
               Assistant Error
             </p>
-            <p className="text-sm text-rose-100">{error.message}</p>
+            <p className="text-sm text-rose-100">{ASSISTANT_CLIENT_ERROR_FALLBACK}</p>
           </article>
         ) : null}
 

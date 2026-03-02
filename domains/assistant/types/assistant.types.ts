@@ -16,6 +16,25 @@ export interface ToolSuccessMeta {
   asOf: string;
 }
 
+export type GuardrailDecision = "allow" | "refuse_investment_advice";
+
+export type GuardrailFallbackReason =
+  | "none"
+  | "no_tool_data"
+  | "tool_error"
+  | "provider_error"
+  | "internal_error";
+
+export interface GuardrailEvaluation {
+  decision: GuardrailDecision;
+  fallbackReason: GuardrailFallbackReason;
+}
+
+export interface ResponseProvenance {
+  sources: string[];
+  freshestAsOf: string;
+}
+
 export interface ChatRequestContext {
   selectedSymbols?: string[];
 }
