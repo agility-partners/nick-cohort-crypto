@@ -492,6 +492,12 @@ public class CoinService : ICoinService
         return Task.FromResult<AddToWatchlistResult?>(successResult);
     }
 
+    public Task<PriceHistoryDto> GetPriceHistory(string coinId, string range)
+    {
+        _logger.LogInformation("GetPriceHistory called (in-memory fallback) for {CoinId}, range {Range}", coinId, range);
+        return Task.FromResult(new PriceHistoryDto { Data = [] });
+    }
+
     public Task<bool> RemoveFromWatchlist(string coinId)
     {
         var watchlistItem = _watchlist.FirstOrDefault(item =>

@@ -49,6 +49,24 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID('bronze.raw_price_history', 'U') IS NULL
+BEGIN
+    CREATE TABLE bronze.raw_price_history (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        coin_id NVARCHAR(100) NOT NULL,
+        timestamp_utc DATETIME2 NOT NULL,
+        price DECIMAL(24,8) NOT NULL,
+        market_cap DECIMAL(24,2) NULL,
+        total_volume DECIMAL(24,2) NULL,
+        ingested_at DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+        CONSTRAINT UQ_raw_price_history_coin_timestamp UNIQUE (coin_id, timestamp_utc)
+    );
+
+    CREATE NONCLUSTERED INDEX IX_raw_price_history_coin_id
+        ON bronze.raw_price_history (coin_id);
+END;
+GO
+
 IF OBJECT_ID('dbo.watchlist', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.watchlist (

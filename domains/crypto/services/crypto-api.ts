@@ -1,4 +1,4 @@
-import type { Crypto } from "@/domains/crypto/types/crypto.types";
+import type { Crypto, TimeRange } from "@/domains/crypto/types/crypto.types";
 
 const BROWSER_API_BASE_URL = "/backend-api";
 const SERVER_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
@@ -91,6 +91,31 @@ export async function addToWatchlist(
     console.error("Failed to add to watchlist", error);
     return null;
   }
+}
+
+export interface PriceHistoryPoint {
+  timestamp: string;
+  price: number;
+  marketCap: number;
+  volume: number;
+}
+
+export interface PriceHistoryResponse {
+  data: PriceHistoryPoint[];
+}
+
+export async function fetchPriceHistory(
+  coinId: string,
+  range: TimeRange,
+): Promise<PriceHistoryPoint[]> {
+  if (!coinId) {
+    return [];
+  }
+
+  const data = await safeFetch<PriceHistoryResponse>(
+    `${getApiBaseUrl()}/api/coins/${encodeURIComponent(coinId)}/price-history?range=${encodeURIComponent(range)}`,
+  );
+  return data?.data ?? [];
 }
 
 export async function removeFromWatchlist(coinId: string): Promise<boolean> {

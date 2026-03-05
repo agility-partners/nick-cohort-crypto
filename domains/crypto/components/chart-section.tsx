@@ -1,13 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import CryptoDetailWatchlistToggle from "@/domains/crypto/components/crypto-detail-watchlist-toggle";
 import PriceChart from "./price-chart";
-import type { ChartType } from "@/domains/crypto/types/crypto.types";
-import { generateAllTimeData } from "./generate-mock-chart-data";
+import type { ChartType, TimeRange, OHLCDataPoint } from "@/domains/crypto/types/crypto.types";
+import { MIN_PRICE } from "@/domains/crypto/constants";
+import { generateMockData } from "./generate-mock-chart-data";
+import type { MockChartData } from "./generate-mock-chart-data";
+import { RANGE_CONFIG, RANGE_LABELS } from "./chart-config";
+import { fetchPriceHistory } from "@/domains/crypto/services/crypto-api";
+import type { PriceHistoryPoint } from "@/domains/crypto/services/crypto-api";
 
 export type { ChartType };
+
+/* ── Ranges we have real data for ── */
+
+const AVAILABLE_RANGES: TimeRange[] = ["1D", "7D", "30D"];
 
 /* ── Props ── */
 
@@ -20,18 +29,84 @@ interface ChartSectionProps {
   allTimeLow?: number;
 }
 
+/* ── Helpers ── */
+
+function transformApiData(
+  points: PriceHistoryPoint[],
+  range: TimeRange,
+): MockChartData {
+  const { labelFormat } = RANGE_CONFIG[range];
+  const formatter = new Intl.DateTimeFormat("en-US", labelFormat);
+
+  const values = points.map((p) => p.price);
+  const labels = points.map((p) => formatter.format(new Date(p.timestamp)));
+
+  const ohlcData: OHLCDataPoint[] = values.map((close, i) => {
+    const open = i > 0 ? values[i - 1] : close;
+    const spread = Math.abs(close - open) * 0.5 + close * 0.005;
+    const high = Math.max(open, close) + spread;
+    const low = Math.max(Math.min(open, close) - spread, MIN_PRICE);
+
+    return {
+      open: Math.max(open, MIN_PRICE),
+      high: Math.max(high, Math.max(open, close)),
+      low,
+      close: Math.max(close, MIN_PRICE),
+    };
+  });
+
+  return { values, labels, ohlcData };
+}
+
 /* ── Component ── */
 
-export default function ChartSection({ cryptoId, symbol, price, change24h, allTimeHigh, allTimeLow }: ChartSectionProps) {
+export default function ChartSection({ cryptoId, symbol, price, change24h }: ChartSectionProps) {
   const [chartType, setChartType] = useState<ChartType>("line");
+  const [timeRange, setTimeRange] = useState<TimeRange>("30D");
+  const [apiData, setApiData] = useState<PriceHistoryPoint[] | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const { values, labels, ohlcData } = useMemo(() => {
-    if (allTimeHigh != null && allTimeLow != null) {
-      return generateAllTimeData(cryptoId, price, allTimeHigh, allTimeLow);
+  const loadPriceHistory = useCallback(async (range: TimeRange) => {
+    setLoading(true);
+    try {
+      const data = await fetchPriceHistory(cryptoId, range);
+      setApiData(data.length > 0 ? data : null);
+    } catch {
+      setApiData(null);
+    } finally {
+      setLoading(false);
     }
-    // Fallback: flat line at current price if ATH/ATL unavailable
-    return { values: [price, price], labels: ["", ""], ohlcData: [] };
-  }, [cryptoId, price, change24h, allTimeHigh, allTimeLow]);
+  }, [cryptoId]);
+
+  useEffect(() => {
+    loadPriceHistory(timeRange);
+  }, [timeRange, loadPriceHistory]);
+
+  const chartData: MockChartData = useMemo(() => {
+    if (apiData && apiData.length > 0) {
+      const data = transformApiData(apiData, timeRange);
+
+      // Replace the last value with the current price so the chart
+      // line terminates at exactly the price shown in the detail header.
+      if (data.values.length > 0) {
+        data.values[data.values.length - 1] = price;
+
+        // Recompute the last OHLC candle to match
+        if (data.ohlcData.length > 0) {
+          const last = data.ohlcData[data.ohlcData.length - 1];
+          last.close = price;
+          last.high = Math.max(last.high, price);
+          last.low = Math.min(last.low, price);
+        }
+      }
+
+      return data;
+    }
+
+    return generateMockData(cryptoId, price, change24h, timeRange);
+  }, [apiData, timeRange, cryptoId, price, change24h]);
+
+  const { values, labels, ohlcData } = chartData;
 
   return (
     <div>
@@ -40,7 +115,24 @@ export default function ChartSection({ cryptoId, symbol, price, change24h, allTi
       </div>
 
       {/* ── Controls row ── */}
-      <div className="mb-3 flex justify-end">
+      <div className="mb-3 flex items-center justify-between">
+        {/* Time range selector */}
+        <div className="flex gap-1 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-1">
+          {AVAILABLE_RANGES.map((range) => (
+            <button
+              key={range}
+              onClick={() => setTimeRange(range)}
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-all ${
+                timeRange === range
+                  ? "bg-[var(--accent)]/20 text-[var(--accent)] shadow-sm"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--badge-bg)]"
+              }`}
+            >
+              {range}
+            </button>
+          ))}
+        </div>
+
         {/* Chart-type toggle */}
         <div className="flex gap-1 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] p-1">
           <button
@@ -84,16 +176,16 @@ export default function ChartSection({ cryptoId, symbol, price, change24h, allTi
       </div>
 
       {/* ── Chart ── */}
-      <PriceChart
-        values={values}
-        labels={labels}
-        symbol={symbol}
-        chartType={chartType}
-        ohlcData={ohlcData}
-        timeRangeLabel="All time trend"
-        allTimeHigh={allTimeHigh}
-        allTimeLow={allTimeLow}
-      />
+      <div className={loading ? "opacity-50 transition-opacity" : "transition-opacity"}>
+        <PriceChart
+          values={values}
+          labels={labels}
+          symbol={symbol}
+          chartType={chartType}
+          ohlcData={ohlcData}
+          timeRangeLabel={RANGE_LABELS[timeRange]}
+        />
+      </div>
     </div>
   );
 }

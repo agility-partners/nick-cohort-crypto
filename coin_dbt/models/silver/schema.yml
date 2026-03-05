@@ -33,3 +33,23 @@ models:
         description: "All-time low price"
       - name: ingested_at
         description: "Ingestion timestamp from bronze layer"
+
+  - name: stg_price_history
+    description: "Deduplicated per-coin price history from bronze raw_price_history"
+    columns:
+      - name: coin_id
+        description: "CoinGecko coin identifier"
+        data_tests:
+          - not_null
+      - name: timestamp_utc
+        description: "UTC timestamp of the price data point"
+        data_tests:
+          - not_null
+      - name: price
+        description: "Coin price in USD at the given timestamp"
+      - name: market_cap
+        description: "Market capitalization in USD at the given timestamp"
+      - name: total_volume
+        description: "Trading volume in USD at the given timestamp"
+      - name: ingested_at
+        description: "Ingestion timestamp from bronze layer"

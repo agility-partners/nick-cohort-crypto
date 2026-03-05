@@ -18,15 +18,18 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
 WORKDIR /app
 
 COPY ingest_coins.py .
+COPY ingest_price_history.py .
 
 RUN pip install --no-cache-dir requests pyodbc
 
-# Create looping entrypoint: run ingest immediately, then every 300 seconds
+# Create looping entrypoint: run both ingests, then sleep
 RUN echo '#!/bin/sh' > /entrypoint.sh \
     && echo 'while true; do' >> /entrypoint.sh \
-    && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Starting ingestion run..."' >> /entrypoint.sh \
+    && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Starting coin market ingestion..."' >> /entrypoint.sh \
     && echo '    python /app/ingest_coins.py' >> /entrypoint.sh \
-    && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Run complete. Sleeping 300 seconds..."' >> /entrypoint.sh \
+    && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Starting price history ingestion..."' >> /entrypoint.sh \
+    && echo '    python /app/ingest_price_history.py --days 1' >> /entrypoint.sh \
+    && echo '    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Ingestion cycle complete. Sleeping 300 seconds..."' >> /entrypoint.sh \
     && echo '    sleep 300' >> /entrypoint.sh \
     && echo 'done' >> /entrypoint.sh \
     && chmod +x /entrypoint.sh

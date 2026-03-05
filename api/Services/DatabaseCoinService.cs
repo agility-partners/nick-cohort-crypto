@@ -322,6 +322,65 @@ public class DatabaseCoinService : ICoinService
         return true;
     }
 
+    private static readonly Dictionary<string, string> RangeDateAddMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["1D"] = "DATEADD(day, -1, GETUTCDATE())",
+        ["7D"] = "DATEADD(day, -7, GETUTCDATE())",
+        ["30D"] = "DATEADD(day, -30, GETUTCDATE())",
+        ["90D"] = "DATEADD(day, -90, GETUTCDATE())",
+        ["1Y"] = "DATEADD(year, -1, GETUTCDATE())",
+        ["ALL"] = "",
+    };
+
+    public async Task<PriceHistoryDto> GetPriceHistory(string coinId, string range)
+    {
+        if (!RangeDateAddMap.TryGetValue(range, out var dateAddExpr))
+        {
+            _logger.LogWarning("Invalid price history range: {Range}", range);
+            return new PriceHistoryDto { Data = [] };
+        }
+
+        var query = dateAddExpr == ""
+            ? """
+              SELECT timestamp_utc, price, market_cap, total_volume
+              FROM gold.fct_price_history
+              WHERE coin_id = @CoinId
+              ORDER BY timestamp_utc ASC
+              """
+            : $"""
+              SELECT timestamp_utc, price, market_cap, total_volume
+              FROM gold.fct_price_history
+              WHERE coin_id = @CoinId AND timestamp_utc >= {dateAddExpr}
+              ORDER BY timestamp_utc ASC
+              """;
+
+        var result = new List<PriceHistoryPointDto>();
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@CoinId", coinId);
+
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            result.Add(new PriceHistoryPointDto
+            {
+                Timestamp = DateTime.SpecifyKind(reader.GetDateTime(reader.GetOrdinal("timestamp_utc")), DateTimeKind.Utc).ToString("o"),
+                Price = GetDecimal(reader, "price"),
+                MarketCap = GetDecimal(reader, "market_cap"),
+                Volume = GetDecimal(reader, "total_volume"),
+            });
+        }
+
+        _logger.LogInformation(
+            "Fetched price history for {CoinId} with range {Range}. Points: {Count}",
+            coinId, range, result.Count);
+
+        return new PriceHistoryDto { Data = result };
+    }
+
     private static CoinDto MapReaderToCoinDto(SqlDataReader reader)
     {
         return new CoinDto

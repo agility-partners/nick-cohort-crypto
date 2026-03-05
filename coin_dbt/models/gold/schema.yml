@@ -71,3 +71,21 @@ models:
         description: "Mover category: gainer or loser"
       - name: rank
         description: "Rank within each category based on change24h"
+
+  - name: fct_price_history
+    description: "Historical price data for tracked coins, joined to fct_coins to include only known coins"
+    columns:
+      - name: coin_id
+        description: "CoinGecko coin identifier"
+        data_tests:
+          - not_null
+      - name: timestamp_utc
+        description: "UTC timestamp of the price data point"
+        data_tests:
+          - not_null
+      - name: price
+        description: "Coin price in USD at the given timestamp"
+      - name: market_cap
+        description: "Market capitalization in USD at the given timestamp"
+      - name: total_volume
+        description: "Trading volume in USD at the given timestamp"

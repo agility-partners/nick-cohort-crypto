@@ -5,11 +5,12 @@ import { notFound } from "next/navigation";
 
 import ChartSection from "@/domains/crypto/components/chart-section";
 import PriceDisplay from "@/domains/crypto/components/price-display";
-import { COMPARE_PRESELECT_QUERY_KEY, COMPARE_VIEW_HREF } from "@/domains/crypto/constants";
+import { COMPARE_PRESELECT_QUERY_KEY, COMPARE_VIEW_HREF, VIEW_MODE, VIEW_META } from "@/domains/crypto/constants";
 import { fetchCoinById } from "@/domains/crypto/services/crypto-api";
 
 interface CryptoDetailPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
 const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
@@ -38,22 +39,29 @@ export async function generateMetadata({ params }: CryptoDetailPageProps): Promi
   };
 }
 
-export default async function CryptoDetailPage({ params }: CryptoDetailPageProps) {
+export default async function CryptoDetailPage({ params, searchParams }: CryptoDetailPageProps) {
   const { id } = await params;
+  const { from } = await searchParams;
   const crypto = await fetchCoinById(id);
 
   if (!crypto) {
     notFound();
   }
 
+  const backHref = from ? `/?view=${from}` : "/";
+  const backLabel =
+    from === VIEW_MODE.WATCHLIST
+      ? VIEW_META[VIEW_MODE.WATCHLIST].title
+      : VIEW_META[VIEW_MODE.ALL].title;
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
         <Link
-          href="/"
+          href={backHref}
           className="inline-flex items-center text-sm font-medium text-gray-400 transition-colors hover:text-green-400"
         >
-          ← Back to watchlist
+          ← Back to {backLabel}
         </Link>
       </div>
 

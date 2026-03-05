@@ -16,7 +16,7 @@ export class CoinDetailPage {
     this.chartImage = page.getByRole("img", { name: /price chart$/i });
     this.lineButton = page.getByRole("button", { name: "Line", exact: true });
     this.candleButton = page.getByRole("button", { name: "Candle", exact: true });
-    this.backLink = page.getByRole("link", { name: "← Back to watchlist" });
+    this.backLink = page.getByRole("link", { name: /← Back to/ });
     this.notFoundHeading = page.getByRole("heading", { level: 1, name: "Crypto Not Found" });
     this.returnLink = page.getByRole("link", { name: "Return to watchlist" });
   }

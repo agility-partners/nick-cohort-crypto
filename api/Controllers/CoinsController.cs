@@ -34,6 +34,29 @@ public class CoinsController : ControllerBase
         return Ok(coin);
     }
 
+    private static readonly HashSet<string> ValidRanges = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "1D", "7D", "30D", "90D", "1Y", "ALL",
+    };
+
+    [HttpGet("{id}/price-history")]
+    public async Task<ActionResult<PriceHistoryDto>> GetPriceHistory(string id, [FromQuery] string range = "30D")
+    {
+        if (!ValidRanges.Contains(range))
+        {
+            return BadRequest(new { error = "Invalid range. Valid values: 1D, 7D, 30D, 90D, 1Y, ALL." });
+        }
+
+        var coin = await _coinService.GetCoinById(id);
+        if (coin is null)
+        {
+            return NotFound();
+        }
+
+        var result = await _coinService.GetPriceHistory(id, range);
+        return Ok(result);
+    }
+
     [HttpGet("symbol/{symbol}")]
     public async Task<ActionResult<CoinDto>> GetCoinBySymbol(string symbol)
     {

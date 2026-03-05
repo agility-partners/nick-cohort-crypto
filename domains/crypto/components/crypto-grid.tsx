@@ -4,12 +4,13 @@ import CryptoCard from "./crypto-card";
 
 interface CryptoGridProps {
   cryptos: Crypto[];
+  from?: string;
 }
 
 /**
  * Renders a responsive grid of cryptocurrency cards with a fallback when no data is available.
  */
-export default function CryptoGrid({ cryptos }: CryptoGridProps) {
+export default function CryptoGrid({ cryptos, from }: CryptoGridProps) {
   if (cryptos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-xl px-6 py-16 text-center">
@@ -30,7 +31,7 @@ export default function CryptoGrid({ cryptos }: CryptoGridProps) {
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
       {cryptos.map((crypto) => (
-        <CryptoCard key={crypto.id} crypto={crypto} />
+        <CryptoCard key={crypto.id} crypto={crypto} from={from} />
       ))}
     </section>
   );

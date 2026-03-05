@@ -1,4 +1,4 @@
-{{ config(materialized='incremental', schema='silver', unique_key=['coin_id', 'last_updated']) }}
+{{ config(materialized='incremental', schema='silver', unique_key='coin_id') }}
 
 with raw_coin_market as (
     select

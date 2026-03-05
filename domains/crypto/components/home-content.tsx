@@ -208,7 +208,7 @@ export default function HomeContent() {
         <CompareMode allCryptos={allCryptos} availableCryptos={displayedCryptos} />
       )}
 
-      {view !== VIEW_MODE.COMPARE && <Watchlist cryptos={displayedCryptos} />}
+      {view !== VIEW_MODE.COMPARE && <Watchlist cryptos={displayedCryptos} from={view} />}
     </>
   );
 }

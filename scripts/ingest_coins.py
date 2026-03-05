@@ -6,6 +6,7 @@ import pyodbc
 import requests
 
 COINGECKO_URL = "https://api.coingecko.com/api/v3/coins/markets"
+COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY")
 REQUEST_PARAMS = {
     "vs_currency": "usd",
     "order": "market_cap_desc",
@@ -27,7 +28,10 @@ SERVER_CANDIDATES = os.getenv("COINSIGHT_DB_SERVERS", _default_servers).split(";
 
 
 def fetch_coin_market_data() -> list[dict]:
-    response = requests.get(COINGECKO_URL, params=REQUEST_PARAMS, timeout=30)
+    headers = {}
+    if COINGECKO_API_KEY:
+        headers["x-cg-demo-api-key"] = COINGECKO_API_KEY
+    response = requests.get(COINGECKO_URL, params=REQUEST_PARAMS, headers=headers, timeout=30)
     response.raise_for_status()
 
     data = response.json()

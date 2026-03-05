@@ -9,3 +9,6 @@ sources:
       - name: raw_coin_market
         description: "Raw CoinGecko market payloads captured by ingestion"
         loaded_at_field: ingested_at
+      - name: raw_price_history
+        description: "Per-coin historical price data from CoinGecko market_chart API"
+        loaded_at_field: ingested_at

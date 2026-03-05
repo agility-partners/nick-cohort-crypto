@@ -9,16 +9,18 @@ import PriceDisplay from "./price-display";
 
 interface CryptoCardProps {
   crypto: Crypto;
+  from?: string;
 }
 
 /**
  * Presents summary information for a single cryptocurrency inside a
  * glassmorphic card that links to its detail route.
  */
-export default function CryptoCard({ crypto }: CryptoCardProps) {
+export default function CryptoCard({ crypto, from }: CryptoCardProps) {
+  const href = from ? `/crypto/${crypto.id}?from=${from}` : `/crypto/${crypto.id}`;
   return (
     <Link
-      href={`/crypto/${crypto.id}`}
+      href={href}
       className="group relative block overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-5 shadow-lg shadow-[var(--shadow-color)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[var(--card-hover-border)] hover:bg-[var(--card-bg)] hover:shadow-xl hover:shadow-green-500/10"
       aria-label={`View details for ${crypto.name}`}
     >

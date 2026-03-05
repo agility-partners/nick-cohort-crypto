@@ -19,4 +19,6 @@ public interface ICoinService
     Task<AddToWatchlistResult?> AddToWatchlist(string coinId);
 
     Task<bool> RemoveFromWatchlist(string coinId);
+
+    Task<PriceHistoryDto> GetPriceHistory(string coinId, string range);
 }
